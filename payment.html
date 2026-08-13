@@ -1018,8 +1018,7 @@
       document.getElementById('stripe-placeholder').style.display = 'none';
       document.getElementById('payment-element').style.display = 'block';
 
-      // Hide Stripe's basic country dropdown — we already collect customer details
-      // and default billing country to Canada for CAD deposits.
+      // Show Country/territory in Stripe; keep name/email/phone on our form.
       const paymentElement = elements.create('payment', {
         layout: 'tabs',
         defaultValues: {
@@ -1034,7 +1033,14 @@
             name: 'never',
             email: 'never',
             phone: 'never',
-            address: 'never',
+            address: {
+              country: 'always',
+              line1: 'never',
+              line2: 'never',
+              city: 'never',
+              state: 'never',
+              postalCode: 'never',
+            },
           },
         },
       });
@@ -1082,9 +1088,6 @@
             email,
             name,
             phone: phone || undefined,
-            address: {
-              country: 'CA',
-            },
           },
         },
       },
