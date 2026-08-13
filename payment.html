@@ -198,203 +198,6 @@
 
     .field input::placeholder { color: var(--placeholder); }
 
-    /* Country / Territory picker (Payment section) */
-    .territory-field { margin-top: 14px; margin-bottom: 4px; }
-
-    .country-picker { position: relative; }
-
-    .country-trigger {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      background: var(--input-bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 13px 14px;
-      font-size: 15px;
-      font-family: inherit;
-      font-weight: 400;
-      color: var(--text);
-      cursor: pointer;
-      text-align: left;
-      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
-    }
-
-    .country-trigger:hover { border-color: #B7BEB0; }
-
-    .country-trigger:focus,
-    .country-picker.is-open .country-trigger {
-      outline: none;
-      border-color: var(--green);
-      box-shadow: 0 0 0 3px rgba(37, 179, 75, 0.15);
-      background: var(--input-focus-bg);
-    }
-
-    .country-trigger-label {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      min-width: 0;
-    }
-
-    .country-trigger-name {
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .country-trigger-code {
-      font-size: 11px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .country-chevron {
-      flex-shrink: 0;
-      width: 18px;
-      height: 18px;
-      color: var(--muted);
-      transition: transform 0.2s ease;
-    }
-
-    .country-picker.is-open .country-chevron {
-      transform: rotate(180deg);
-      color: var(--green);
-    }
-
-    .country-panel {
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: calc(100% + 8px);
-      z-index: 40;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      box-shadow: 0 18px 40px rgba(28, 36, 24, 0.16);
-      overflow: hidden;
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(-6px);
-      transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
-      pointer-events: none;
-    }
-
-    .country-picker.is-open .country-panel {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
-
-    .country-search-wrap {
-      padding: 12px 12px 10px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .country-search {
-      width: 100%;
-      background: var(--input-bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 11px 12px 11px 38px;
-      font-size: 14px;
-      font-family: inherit;
-      color: var(--text);
-      outline: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%239AA193' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='M12 12l-2.2-2.2'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: 12px center;
-    }
-
-    .country-search:focus {
-      border-color: var(--green);
-      box-shadow: 0 0 0 3px rgba(37, 179, 75, 0.12);
-      background-color: var(--input-focus-bg);
-    }
-
-    .country-list {
-      max-height: 240px;
-      overflow-y: auto;
-      padding: 6px;
-      overscroll-behavior: contain;
-    }
-
-    .country-option {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      border: 0;
-      background: transparent;
-      border-radius: 10px;
-      padding: 11px 12px;
-      font-size: 14px;
-      font-family: inherit;
-      color: var(--text);
-      cursor: pointer;
-      text-align: left;
-      transition: background 0.12s ease;
-    }
-
-    .country-option:hover,
-    .country-option.is-active {
-      background: rgba(37, 179, 75, 0.1);
-    }
-
-    .country-option.is-selected {
-      background: rgba(37, 179, 75, 0.14);
-      font-weight: 600;
-    }
-
-    .country-option-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-      min-width: 0;
-    }
-
-    .country-option-name {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .country-option-code {
-      font-size: 11px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--muted);
-      font-weight: 500;
-    }
-
-    .country-check {
-      flex-shrink: 0;
-      width: 16px;
-      height: 16px;
-      color: var(--green);
-      opacity: 0;
-    }
-
-    .country-option.is-selected .country-check { opacity: 1; }
-
-    .country-empty {
-      padding: 18px 12px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .country-panel { box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45); }
-      .country-trigger:hover { border-color: #4A5446; }
-    }
-
     .fields-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -937,42 +740,6 @@
         Add your Stripe secret key in Vercel to enable live payments.
       </div>
 
-      <div class="field territory-field">
-        <label id="country-label" for="country-trigger">Country / Territory</label>
-        <div class="country-picker" id="country-picker">
-          <input type="hidden" id="customer-country" name="country" value="CA" autocomplete="country" />
-          <button
-            type="button"
-            class="country-trigger"
-            id="country-trigger"
-            aria-haspopup="listbox"
-            aria-expanded="false"
-            aria-labelledby="country-label country-trigger"
-          >
-            <span class="country-trigger-label">
-              <span class="country-trigger-name" id="country-trigger-name">Canada</span>
-              <span class="country-trigger-code" id="country-trigger-code">CA</span>
-            </span>
-            <svg class="country-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M6 9l6 6 6-6" />
-            </svg>
-          </button>
-          <div class="country-panel" id="country-panel" role="presentation" hidden>
-            <div class="country-search-wrap">
-              <input
-                type="search"
-                class="country-search"
-                id="country-search"
-                placeholder="Search countries…"
-                autocomplete="off"
-                aria-label="Search countries"
-              />
-            </div>
-            <div class="country-list" id="country-list" role="listbox" aria-labelledby="country-label"></div>
-          </div>
-        </div>
-      </div>
-
       <button class="btn" id="submit-btn" type="button">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <rect x="3" y="11" width="18" height="11" rx="2" />
@@ -1079,146 +846,6 @@
   let checkoutReady = false;
   const DEFAULT_PRODUCT = 'Total Deposit';
 
-  const COUNTRIES = [
-    { code: 'CA', name: 'Canada' },
-    { code: 'US', name: 'United States' },
-    { code: 'GB', name: 'United Kingdom' },
-    { code: 'AU', name: 'Australia' },
-    { code: 'NZ', name: 'New Zealand' },
-    { code: 'IE', name: 'Ireland' },
-    { code: 'DE', name: 'Germany' },
-    { code: 'FR', name: 'France' },
-    { code: 'NL', name: 'Netherlands' },
-    { code: 'BE', name: 'Belgium' },
-    { code: 'CH', name: 'Switzerland' },
-    { code: 'AT', name: 'Austria' },
-    { code: 'SE', name: 'Sweden' },
-    { code: 'NO', name: 'Norway' },
-    { code: 'DK', name: 'Denmark' },
-    { code: 'FI', name: 'Finland' },
-    { code: 'ES', name: 'Spain' },
-    { code: 'IT', name: 'Italy' },
-    { code: 'PT', name: 'Portugal' },
-    { code: 'MX', name: 'Mexico' },
-    { code: 'BR', name: 'Brazil' },
-    { code: 'IN', name: 'India' },
-    { code: 'JP', name: 'Japan' },
-    { code: 'KR', name: 'South Korea' },
-    { code: 'SG', name: 'Singapore' },
-    { code: 'HK', name: 'Hong Kong' },
-    { code: 'AE', name: 'United Arab Emirates' },
-    { code: 'SA', name: 'Saudi Arabia' },
-    { code: 'ZA', name: 'South Africa' },
-    { code: 'PH', name: 'Philippines' },
-  ];
-
-  function getSelectedCountry() {
-    const code = (document.getElementById('customer-country').value || 'CA').toUpperCase();
-    return COUNTRIES.find((c) => c.code === code) || COUNTRIES[0];
-  }
-
-  function setSelectedCountry(code) {
-    const country = COUNTRIES.find((c) => c.code === code) || COUNTRIES[0];
-    document.getElementById('customer-country').value = country.code;
-    document.getElementById('country-trigger-name').textContent = country.name;
-    document.getElementById('country-trigger-code').textContent = country.code;
-    renderCountryOptions(document.getElementById('country-search').value || '');
-  }
-
-  function renderCountryOptions(query) {
-    const list = document.getElementById('country-list');
-    const selected = getSelectedCountry().code;
-    const q = String(query || '').trim().toLowerCase();
-    const matches = COUNTRIES.filter((c) =>
-      !q || c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)
-    );
-
-    if (!matches.length) {
-      list.innerHTML = '<div class="country-empty">No countries match your search</div>';
-      return;
-    }
-
-    list.innerHTML = matches.map((c) => `
-      <button
-        type="button"
-        class="country-option${c.code === selected ? ' is-selected' : ''}"
-        role="option"
-        data-code="${c.code}"
-        aria-selected="${c.code === selected ? 'true' : 'false'}"
-      >
-        <span class="country-option-meta">
-          <span class="country-option-name">${c.name}</span>
-          <span class="country-option-code">${c.code}</span>
-        </span>
-        <svg class="country-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-          <path d="M5 13l4 4L19 7" />
-        </svg>
-      </button>
-    `).join('');
-  }
-
-  function openCountryPicker() {
-    const picker = document.getElementById('country-picker');
-    const panel = document.getElementById('country-panel');
-    const trigger = document.getElementById('country-trigger');
-    const search = document.getElementById('country-search');
-    picker.classList.add('is-open');
-    panel.hidden = false;
-    trigger.setAttribute('aria-expanded', 'true');
-    renderCountryOptions(search.value);
-    requestAnimationFrame(() => search.focus());
-  }
-
-  function closeCountryPicker() {
-    const picker = document.getElementById('country-picker');
-    const panel = document.getElementById('country-panel');
-    const trigger = document.getElementById('country-trigger');
-    picker.classList.remove('is-open');
-    panel.hidden = true;
-    trigger.setAttribute('aria-expanded', 'false');
-  }
-
-  function initCountryPicker() {
-    const picker = document.getElementById('country-picker');
-    const trigger = document.getElementById('country-trigger');
-    const search = document.getElementById('country-search');
-    const list = document.getElementById('country-list');
-
-    setSelectedCountry('CA');
-
-    trigger.addEventListener('click', () => {
-      if (picker.classList.contains('is-open')) closeCountryPicker();
-      else openCountryPicker();
-    });
-
-    search.addEventListener('input', () => renderCountryOptions(search.value));
-    search.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        closeCountryPicker();
-        trigger.focus();
-      }
-    });
-
-    list.addEventListener('click', (e) => {
-      const option = e.target.closest('.country-option');
-      if (!option) return;
-      setSelectedCountry(option.dataset.code);
-      closeCountryPicker();
-      trigger.focus();
-    });
-
-    document.addEventListener('click', (e) => {
-      if (!picker.contains(e.target)) closeCountryPicker();
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && picker.classList.contains('is-open')) {
-        closeCountryPicker();
-      }
-    });
-  }
-
   function showState(name) {
     ['state-loading', 'state-pay', 'state-success', 'state-error'].forEach((id) => {
       document.getElementById(id).classList.toggle('active', id === `state-${name}`);
@@ -1257,17 +884,17 @@
     el.classList.remove('visible');
   }
 
-  function applyOrderSummary(cents, currency, productName) {
+  function applyOrderSummary(cents, currency) {
     amountCents = cents;
     activeCurrency = currency || 'cad';
     const money = formatMoney(amountCents, activeCurrency);
     document.getElementById('amount-display').textContent = money;
-    document.getElementById('product-display').textContent = productName || DEFAULT_PRODUCT;
+    document.getElementById('product-display').textContent = DEFAULT_PRODUCT;
     document.getElementById('submit-text').textContent = `Complete Deposit · ${money}`;
   }
 
   function showBrandedPreview(message) {
-    applyOrderSummary(103100, 'cad', DEFAULT_PRODUCT);
+    applyOrderSummary(103100, 'cad');
     document.getElementById('payment-element').style.display = 'none';
     document.getElementById('stripe-placeholder').style.display = 'block';
     const info = document.getElementById('pay-info');
@@ -1308,7 +935,7 @@
         return;
       }
 
-      applyOrderSummary(config.amountCents, config.currency, config.productName || DEFAULT_PRODUCT);
+      applyOrderSummary(config.amountCents, config.currency);
 
       const intentRes = await fetch(`${BASE}/api/create-payment-intent`, {
         method: 'POST',
@@ -1419,7 +1046,6 @@
     const email = document.getElementById('customer-email').value.trim();
     const name = document.getElementById('customer-name').value.trim();
     const phone = document.getElementById('customer-phone').value.trim();
-    const country = getSelectedCountry().code;
 
     if (!name) {
       showPayError('Please enter your full name.');
@@ -1445,7 +1071,7 @@
             name,
             phone: phone || undefined,
             address: {
-              country,
+              country: 'CA',
             },
           },
         },
@@ -1470,7 +1096,6 @@
     showState('success');
   });
 
-  initCountryPicker();
   init();
 
   // Animate summary stripe + install cards when they enter the viewport
