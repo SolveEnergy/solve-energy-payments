@@ -341,14 +341,30 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
       margin-top: 16px;
       font-size: 12px;
       font-weight: 400;
       color: var(--muted);
+      flex-wrap: wrap;
     }
 
     .trust svg { color: var(--green); }
+
+    .stripe-badge {
+      display: block;
+      height: 22px;
+      width: auto;
+      margin: 14px auto 0;
+      opacity: 0.9;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .stripe-badge {
+        filter: invert(1) grayscale(1) brightness(1.4);
+        opacity: 0.85;
+      }
+    }
 
     /* States overlay inside card */
     .state { display: none; }
@@ -707,8 +723,9 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
         </svg>
-        <span>100% secure &amp; safe payments · Powered by Stripe</span>
+        <span>100% secure &amp; safe payments</span>
       </div>
+      <img class="stripe-badge" src="assets/powered-by-stripe.png" alt="Powered by Stripe" />
     </div>
 
     <!-- Success -->
@@ -765,11 +782,11 @@
         </article>
         <article class="gallery-item">
           <div class="gallery-media">
-            <img src="assets/hero-roof.jpg" alt="Roof solar array" />
+            <img src="assets/install-victoria.png" alt="Solar installation in Victoria, BC" />
           </div>
           <div class="gallery-caption">
-            Precision roof arrays
-            <span>Built for Canadian homes</span>
+            Location: Victoria, BC
+            <span>System: 23.5 kW</span>
           </div>
         </article>
       </div>
