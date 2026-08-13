@@ -215,8 +215,6 @@
       padding: 16px 18px;
       margin: 22px 0 24px;
       border: 1px solid var(--border);
-      position: relative;
-      overflow: hidden;
       opacity: 0;
       transform: translateY(24px);
       transition:
@@ -231,33 +229,10 @@
       transform: translateY(0);
     }
 
-    .summary::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 4px;
-      background: var(--green);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.35s ease;
-    }
-
     .summary.is-visible:hover {
       transform: translateY(-6px);
       border-color: var(--green);
       box-shadow: 0 14px 32px rgba(37, 179, 75, 0.18);
-    }
-
-    .summary.is-visible:hover::after {
-      transform: scaleX(1);
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .summary::after {
-        transition: none;
-      }
     }
 
     .summary-row {
