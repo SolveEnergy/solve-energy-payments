@@ -13,20 +13,44 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Stripe secret key is not configured' });
   }
 
-  // Defaults: $1,031.00 CAD — "Solve Energy Project Deposit (New)" / prod_V3qNf5KztX5oWV
-  const amountCents = Number(process.env.PAYMENT_AMOUNT_CENTS || '103100');
-  const currency = (process.env.PAYMENT_CURRENCY || 'cad').toLowerCase();
-  const productName = process.env.PAYMENT_PRODUCT_NAME || 'Total Deposit';
-  const productId = process.env.STRIPE_PRODUCT_ID || 'prod_V3qNf5KztX5oWV';
-
-  if (!Number.isFinite(amountCents) || amountCents < 50) {
-    return res.status(500).json({ error: 'Invalid payment amount configuration' });
-  }
+  const priceId = process.env.STRIPE_PRICE_ID;
+  const productIdFallback = process.env.STRIPE_PRODUCT_ID || 'prod_V3qNf5KztX5oWV';
+  const productNameFallback = process.env.PAYMENT_PRODUCT_NAME || 'Total Deposit';
 
   const { email, name, job_id, description } = req.body || {};
 
   try {
     const stripe = new Stripe(secretKey);
+
+    let amountCents = Number(process.env.PAYMENT_AMOUNT_CENTS || '103100');
+    let currency = (process.env.PAYMENT_CURRENCY || 'cad').toLowerCase();
+    let productName = productNameFallback;
+    let productId = productIdFallback;
+
+    if (priceId) {
+      const price = await stripe.prices.retrieve(priceId, { expand: ['product'] });
+
+      if (price.unit_amount == null) {
+        return res.status(500).json({ error: 'Stripe price must be a fixed one-time amount' });
+      }
+      if (price.type && price.type !== 'one_time') {
+        return res.status(500).json({ error: 'Stripe price must be a one-time price for deposits' });
+      }
+
+      amountCents = price.unit_amount;
+      currency = (price.currency || currency).toLowerCase();
+
+      if (typeof price.product === 'object' && price.product && !price.product.deleted) {
+        productId = price.product.id || productId;
+        if (price.product.name) productName = price.product.name;
+      } else if (typeof price.product === 'string') {
+        productId = price.product;
+      }
+    }
+
+    if (!Number.isFinite(amountCents) || amountCents < 50) {
+      return res.status(500).json({ error: 'Invalid payment amount configuration' });
+    }
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountCents,
@@ -39,6 +63,7 @@ export default async function handler(req, res) {
       metadata: {
         source: 'solve-energy-payments',
         brand: 'solve-energy',
+        price_id: priceId || '',
         product_id: productId,
         product_name: productName,
         job_id: typeof job_id === 'string' ? job_id : '',
@@ -53,6 +78,8 @@ export default async function handler(req, res) {
       amountCents,
       currency,
       productName,
+      productId,
+      priceId: priceId || null,
     });
   } catch (e) {
     console.error('create-payment-intent error:', e);
