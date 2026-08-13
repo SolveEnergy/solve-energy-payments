@@ -18,18 +18,58 @@
       --green-dark: #1e943c;
       --yellow: #FBE017;
       --white: #FFFFFF;
-      --muted: #5A6455;
-      --border: #D5D9CF;
       --error: #C0392B;
       --success: #25B34B;
+
+      /* Light mode (default) */
+      --bg: var(--concrete);
+      --surface: var(--white);
+      --text: var(--core);
+      --muted: #5A6455;
+      --border: #D5D9CF;
+      --input-bg: var(--concrete);
+      --input-focus-bg: var(--white);
+      --placeholder: #9AA193;
+      --card-shadow: 0 8px 30px rgba(28, 36, 24, 0.08);
+      --gallery-panel: var(--sky);
+      --logo-filter: brightness(0) saturate(100%);
+      --info-bg: rgba(185, 218, 231, 0.45);
+      --info-border: rgba(185, 218, 231, 0.9);
+      --error-bg: rgba(192, 57, 43, 0.08);
+      --error-border: rgba(192, 57, 43, 0.25);
+      --spinner-track: var(--border);
+      color-scheme: light;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121710;
+        --surface: #1C2418;
+        --text: #E8ECE1;
+        --muted: #B9C0B2;
+        --border: #3A4336;
+        --input-bg: #121710;
+        --input-focus-bg: #252D20;
+        --placeholder: #7A8272;
+        --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+        --gallery-panel: #243038;
+        --logo-filter: brightness(0) invert(1);
+        --info-bg: rgba(185, 218, 231, 0.12);
+        --info-border: rgba(185, 218, 231, 0.28);
+        --error-bg: rgba(239, 68, 68, 0.12);
+        --error-border: rgba(239, 68, 68, 0.35);
+        --spinner-track: #3A4336;
+        --error: #F87171;
+        color-scheme: dark;
+      }
     }
 
     html { scroll-behavior: smooth; }
 
     body {
       font-family: 'Inter', Arial, Helvetica, sans-serif;
-      background: var(--concrete);
-      color: var(--core);
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
       line-height: 1.5;
       -webkit-font-smoothing: antialiased;
@@ -59,8 +99,7 @@
       width: 180px;
       max-width: 55vw;
       height: auto;
-      /* Core-coloured mark on Concrete background */
-      filter: brightness(0) saturate(100%);
+      filter: var(--logo-filter);
       opacity: 0.92;
     }
 
@@ -75,10 +114,10 @@
 
     /* Payment card */
     .card {
-      background: var(--white);
+      background: var(--surface);
       border-radius: 16px;
-      box-shadow: 0 8px 30px rgba(28, 36, 24, 0.08);
-      border: 1px solid rgba(28, 36, 24, 0.06);
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border);
       padding: 36px 32px;
       margin-bottom: 48px;
     }
@@ -101,7 +140,7 @@
       font-size: 26px;
       font-weight: 700;
       letter-spacing: -0.02em;
-      color: var(--core);
+      color: var(--text);
       margin-bottom: 6px;
     }
 
@@ -117,7 +156,7 @@
       font-weight: 500;
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      color: var(--core);
+      color: var(--text);
       margin: 0 0 12px;
     }
 
@@ -135,25 +174,25 @@
 
     .field input {
       width: 100%;
-      background: var(--concrete);
+      background: var(--input-bg);
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 13px 14px;
       font-size: 15px;
       font-family: inherit;
       font-weight: 400;
-      color: var(--core);
+      color: var(--text);
       outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
     }
 
     .field input:focus {
       border-color: var(--green);
       box-shadow: 0 0 0 3px rgba(37, 179, 75, 0.15);
-      background: var(--white);
+      background: var(--input-focus-bg);
     }
 
-    .field input::placeholder { color: #9AA193; }
+    .field input::placeholder { color: var(--placeholder); }
 
     .fields-grid {
       display: grid;
@@ -167,10 +206,11 @@
 
     /* Order summary */
     .summary {
-      background: var(--concrete);
+      background: var(--input-bg);
       border-radius: 12px;
       padding: 16px 18px;
       margin: 22px 0 24px;
+      border: 1px solid var(--border);
     }
 
     .summary-row {
@@ -189,7 +229,7 @@
 
     .summary-item {
       font-weight: 700;
-      color: var(--core);
+      color: var(--text);
     }
 
     .summary-meta {
@@ -201,7 +241,7 @@
 
     .summary-price {
       font-weight: 700;
-      color: var(--core);
+      color: var(--text);
       font-size: 16px;
       white-space: nowrap;
     }
@@ -214,7 +254,7 @@
     .summary-total-price {
       font-size: 20px;
       font-weight: 700;
-      color: var(--core);
+      color: var(--text);
     }
 
     #payment-element {
@@ -224,7 +264,7 @@
 
     .stripe-placeholder {
       display: none;
-      background: var(--concrete);
+      background: var(--input-bg);
       border: 1px dashed var(--border);
       border-radius: 10px;
       padding: 18px 16px;
@@ -236,7 +276,7 @@
     }
 
     .stripe-placeholder strong {
-      color: var(--core);
+      color: var(--text);
       font-weight: 600;
     }
 
@@ -251,15 +291,15 @@
     }
 
     .error-banner {
-      background: rgba(192, 57, 43, 0.08);
-      border: 1px solid rgba(192, 57, 43, 0.25);
+      background: var(--error-bg);
+      border: 1px solid var(--error-border);
       color: var(--error);
     }
 
     .info-banner {
-      background: rgba(185, 218, 231, 0.45);
-      border: 1px solid rgba(185, 218, 231, 0.9);
-      color: var(--core);
+      background: var(--info-bg);
+      border: 1px solid var(--info-border);
+      color: var(--text);
     }
 
     .error-banner.visible,
@@ -316,7 +356,7 @@
       width: 56px;
       height: 56px;
       border-radius: 50%;
-      border: 3px solid var(--border);
+      border: 3px solid var(--spinner-track);
       border-top-color: var(--green);
       animation: spin 0.9s linear infinite;
       margin: 0 auto 20px;
@@ -359,7 +399,7 @@
       height: 72px;
       border-radius: 50%;
       border: 2px solid var(--error);
-      background: rgba(192, 57, 43, 0.08);
+      background: var(--error-bg);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -370,6 +410,7 @@
     .state-center h2 {
       font-size: 22px;
       font-weight: 500;
+      color: var(--text);
       margin-bottom: 8px;
     }
 
@@ -390,13 +431,13 @@
 
     .btn-secondary {
       background: transparent;
-      color: var(--core);
+      color: var(--text);
       border: 1px solid var(--border);
       margin-top: 8px;
     }
 
     .btn-secondary:hover {
-      background: var(--concrete);
+      background: var(--input-bg);
     }
 
     /* Gallery */
@@ -413,6 +454,7 @@
       font-size: 28px;
       font-weight: 700;
       letter-spacing: -0.02em;
+      color: var(--text);
       margin-bottom: 8px;
     }
 
@@ -426,7 +468,7 @@
     }
 
     .gallery-panel {
-      background: var(--sky);
+      background: var(--gallery-panel);
       border-radius: 16px;
       padding: 20px;
     }
@@ -448,14 +490,14 @@
       object-fit: cover;
       border-radius: 10px;
       display: block;
-      background: rgba(28, 36, 24, 0.08);
+      background: var(--input-bg);
     }
 
     .gallery-caption {
       margin-top: 10px;
       font-size: 13px;
       font-weight: 600;
-      color: var(--core);
+      color: var(--text);
       line-height: 1.4;
     }
 
@@ -476,7 +518,7 @@
       font-size: 15px;
       font-weight: 500;
       font-style: italic;
-      color: var(--core);
+      color: var(--text);
       margin-bottom: 16px;
       line-height: 1.5;
     }
@@ -488,7 +530,7 @@
     }
 
     .footer-contact a {
-      color: var(--core);
+      color: var(--text);
       text-decoration: none;
       font-weight: 500;
     }
@@ -780,34 +822,65 @@
       }
 
       stripe = Stripe(config.publishableKey);
+
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const appearance = isDark
+        ? {
+            theme: 'night',
+            variables: {
+              colorPrimary: '#25B34B',
+              colorBackground: '#1C2418',
+              colorText: '#E8ECE1',
+              colorDanger: '#F87171',
+              fontFamily: 'Inter, system-ui, sans-serif',
+              borderRadius: '10px',
+              spacingUnit: '4px',
+            },
+            rules: {
+              '.Input': {
+                backgroundColor: '#121710',
+                borderColor: '#3A4336',
+              },
+              '.Input:focus': {
+                borderColor: '#25B34B',
+                boxShadow: '0 0 0 3px rgba(37, 179, 75, 0.2)',
+              },
+              '.Label': {
+                color: '#B9C0B2',
+                fontWeight: '500',
+              },
+            },
+          }
+        : {
+            theme: 'stripe',
+            variables: {
+              colorPrimary: '#25B34B',
+              colorBackground: '#FFFFFF',
+              colorText: '#1C2418',
+              colorDanger: '#C0392B',
+              fontFamily: 'Inter, system-ui, sans-serif',
+              borderRadius: '10px',
+              spacingUnit: '4px',
+            },
+            rules: {
+              '.Input': {
+                backgroundColor: '#E8ECE1',
+                borderColor: '#D5D9CF',
+              },
+              '.Input:focus': {
+                borderColor: '#25B34B',
+                boxShadow: '0 0 0 3px rgba(37, 179, 75, 0.15)',
+              },
+              '.Label': {
+                color: '#5A6455',
+                fontWeight: '500',
+              },
+            },
+          };
+
       elements = stripe.elements({
         clientSecret: intent.clientSecret,
-        appearance: {
-          theme: 'stripe',
-          variables: {
-            colorPrimary: '#25B34B',
-            colorBackground: '#FFFFFF',
-            colorText: '#1C2418',
-            colorDanger: '#C0392B',
-            fontFamily: 'Inter, system-ui, sans-serif',
-            borderRadius: '10px',
-            spacingUnit: '4px',
-          },
-          rules: {
-            '.Input': {
-              backgroundColor: '#E8ECE1',
-              borderColor: '#D5D9CF',
-            },
-            '.Input:focus': {
-              borderColor: '#25B34B',
-              boxShadow: '0 0 0 3px rgba(37, 179, 75, 0.15)',
-            },
-            '.Label': {
-              color: '#5A6455',
-              fontWeight: '500',
-            },
-          },
-        },
+        appearance,
       });
 
       document.getElementById('stripe-placeholder').style.display = 'none';
