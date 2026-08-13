@@ -209,7 +209,7 @@
     }
 
     /* Branded Country / Territory picker */
-    .territory-field { margin-top: 14px; margin-bottom: 4px; }
+    .territory-field { margin-top: 4px; margin-bottom: 4px; }
 
     .country-picker {
       position: relative;
@@ -934,20 +934,6 @@
         </div>
       </div>
 
-      <div class="summary">
-        <div class="summary-row">
-          <div class="summary-item" id="product-display">Total Deposit</div>
-          <div class="summary-price" id="amount-display">CA$1,031.00</div>
-        </div>
-      </div>
-
-      <div class="section-label">Payment</div>
-      <div id="payment-element"></div>
-      <div class="stripe-placeholder" id="stripe-placeholder">
-        <strong>Stripe card form will appear here</strong><br />
-        Add your Stripe secret key in Vercel to enable live payments.
-      </div>
-
       <div class="field territory-field">
         <label id="country-label" for="country-trigger">Country / Territory</label>
         <div class="country-picker" id="country-picker">
@@ -982,6 +968,20 @@
             <div class="country-list" id="country-list" role="listbox" aria-labelledby="country-label"></div>
           </div>
         </div>
+      </div>
+
+      <div class="summary">
+        <div class="summary-row">
+          <div class="summary-item" id="product-display">Total Deposit</div>
+          <div class="summary-price" id="amount-display">CA$1,031.00</div>
+        </div>
+      </div>
+
+      <div class="section-label">Payment</div>
+      <div id="payment-element"></div>
+      <div class="stripe-placeholder" id="stripe-placeholder">
+        <strong>Stripe card form will appear here</strong><br />
+        Add your Stripe secret key in Vercel to enable live payments.
       </div>
 
       <button class="btn" id="submit-btn" type="button">
