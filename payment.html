@@ -561,15 +561,8 @@
 
       <div class="summary">
         <div class="summary-row">
-          <div>
-            <div class="summary-item" id="product-display">Solve Energy Project Deposit (New)</div>
-            <div class="summary-meta">Quantity: 1</div>
-          </div>
+          <div class="summary-item" id="product-display">Total Deposit</div>
           <div class="summary-price" id="amount-display">CA$1,031.00</div>
-        </div>
-        <div class="summary-row">
-          <div class="summary-total-label">Order total</div>
-          <div class="summary-total-price" id="total-display">CA$1,031.00</div>
         </div>
       </div>
 
@@ -677,7 +670,7 @@
   let amountCents = 103100;
   let activeCurrency = 'cad';
   let checkoutReady = false;
-  const DEFAULT_PRODUCT = 'Solve Energy Project Deposit (New)';
+  const DEFAULT_PRODUCT = 'Total Deposit';
 
   function showState(name) {
     ['state-loading', 'state-pay', 'state-success', 'state-error'].forEach((id) => {
@@ -722,7 +715,6 @@
     activeCurrency = currency || 'cad';
     const money = formatMoney(amountCents, activeCurrency);
     document.getElementById('amount-display').textContent = money;
-    document.getElementById('total-display').textContent = money;
     document.getElementById('product-display').textContent = productName || DEFAULT_PRODUCT;
     document.getElementById('submit-text').textContent = `Complete Deposit · ${money}`;
   }

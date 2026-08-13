@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     || 'pk_live_51ScaVFENkL2uPjR2wfrpGCgDreVd1CSLHkZBvAZuiuukyFnPiEtXR3ElJEzACdMi50AsOHAIZmaKrDb0tBDM7F6Z00WpKrkz9c';
   const amountCents = Number(process.env.PAYMENT_AMOUNT_CENTS || '103100');
   const currency = (process.env.PAYMENT_CURRENCY || 'cad').toLowerCase();
-  const productName = process.env.PAYMENT_PRODUCT_NAME || 'Solve Energy Project Deposit (New)';
+  const productName = process.env.PAYMENT_PRODUCT_NAME || 'Total Deposit';
   const productId = process.env.STRIPE_PRODUCT_ID || 'prod_V3qNf5KztX5oWV';
 
   if (!publishableKey) {

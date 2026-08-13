@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   // Defaults: $1,031.00 CAD — "Solve Energy Project Deposit (New)" / prod_V3qNf5KztX5oWV
   const amountCents = Number(process.env.PAYMENT_AMOUNT_CENTS || '103100');
   const currency = (process.env.PAYMENT_CURRENCY || 'cad').toLowerCase();
-  const productName = process.env.PAYMENT_PRODUCT_NAME || 'Solve Energy Project Deposit (New)';
+  const productName = process.env.PAYMENT_PRODUCT_NAME || 'Total Deposit';
   const productId = process.env.STRIPE_PRODUCT_ID || 'prod_V3qNf5KztX5oWV';
 
   if (!Number.isFinite(amountCents) || amountCents < 50) {
