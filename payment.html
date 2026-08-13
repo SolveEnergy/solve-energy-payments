@@ -935,7 +935,7 @@
         return;
       }
 
-      applyOrderSummary(config.amountCents, config.currency, config.productName || DEFAULT_PRODUCT);
+      applyOrderSummary(config.amountCents, config.currency, DEFAULT_PRODUCT);
 
       const intentRes = await fetch(`${BASE}/api/create-payment-intent`, {
         method: 'POST',
