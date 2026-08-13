@@ -351,19 +351,24 @@
 
     .trust svg { color: var(--green); }
 
-    .stripe-badge {
-      display: block;
-      height: 22px;
-      width: auto;
-      margin: 14px auto 0;
-      opacity: 0.9;
+    .powered-by-stripe {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 400;
+      color: #8898aa;
+      letter-spacing: 0.01em;
+    }
+
+    .powered-by-stripe strong {
+      font-weight: 700;
+      color: #32325d;
+      letter-spacing: -0.02em;
     }
 
     @media (prefers-color-scheme: dark) {
-      .stripe-badge {
-        filter: invert(1) grayscale(1) brightness(1.4);
-        opacity: 0.85;
-      }
+      .powered-by-stripe { color: #A0AEC0; }
+      .powered-by-stripe strong { color: #E8ECE1; }
     }
 
     /* States overlay inside card */
@@ -725,7 +730,7 @@
         </svg>
         <span>100% secure &amp; safe payments</span>
       </div>
-      <img class="stripe-badge" src="assets/powered-by-stripe.png" alt="Powered by Stripe" />
+      <p class="powered-by-stripe">Powered by <strong>stripe</strong></p>
     </div>
 
     <!-- Success -->
@@ -786,7 +791,7 @@
           </div>
           <div class="gallery-caption">
             Location: Victoria, BC
-            <span>System: 23.5 kW</span>
+            <span><strong>System:</strong> 23.5 kW</span>
           </div>
         </article>
       </div>
