@@ -351,8 +351,8 @@
 
     .trust svg { color: var(--green); }
 
-    .powered-by-stripe {
-      margin-top: 12px;
+    .stripe-powered {
+      margin-top: 14px;
       text-align: center;
       font-size: 13px;
       font-weight: 400;
@@ -360,15 +360,19 @@
       letter-spacing: 0.01em;
     }
 
-    .powered-by-stripe strong {
+    .stripe-powered strong {
       font-weight: 700;
-      color: #32325d;
+      color: #6772e5;
       letter-spacing: -0.02em;
     }
 
     @media (prefers-color-scheme: dark) {
-      .powered-by-stripe { color: #A0AEC0; }
-      .powered-by-stripe strong { color: #E8ECE1; }
+      .stripe-powered {
+        color: #9aa5b5;
+      }
+      .stripe-powered strong {
+        color: #a0a8f0;
+      }
     }
 
     /* States overlay inside card */
@@ -730,7 +734,7 @@
         </svg>
         <span>100% secure &amp; safe payments</span>
       </div>
-      <p class="powered-by-stripe">Powered by <strong>stripe</strong></p>
+      <p class="stripe-powered">Powered by <strong>stripe</strong></p>
     </div>
 
     <!-- Success -->
