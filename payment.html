@@ -31,7 +31,9 @@
       --input-focus-bg: var(--white);
       --placeholder: #9AA193;
       --card-shadow: 0 8px 30px rgba(28, 36, 24, 0.08);
-      --gallery-panel: var(--sky);
+      --gallery-panel: transparent;
+      --card-item-bg: var(--white);
+      --card-item-shadow: 0 6px 20px rgba(28, 36, 24, 0.08);
       --logo-filter: brightness(0) saturate(100%);
       --info-bg: rgba(185, 218, 231, 0.45);
       --info-border: rgba(185, 218, 231, 0.9);
@@ -52,7 +54,9 @@
         --input-focus-bg: #252D20;
         --placeholder: #7A8272;
         --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
-        --gallery-panel: #243038;
+        --gallery-panel: transparent;
+        --card-item-bg: #1C2418;
+        --card-item-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
         --logo-filter: brightness(0) invert(1);
         --info-bg: rgba(185, 218, 231, 0.12);
         --info-border: rgba(185, 218, 231, 0.28);
@@ -447,7 +451,7 @@
 
     .gallery-head {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
 
     .gallery-head h2 {
@@ -468,15 +472,15 @@
     }
 
     .gallery-panel {
-      background: var(--gallery-panel);
-      border-radius: 16px;
-      padding: 20px;
+      background: transparent;
+      border-radius: 0;
+      padding: 0;
     }
 
     .gallery-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
+      gap: 16px;
     }
 
     @media (max-width: 640px) {
@@ -484,19 +488,83 @@
       .gallery-head h2 { font-size: 24px; }
     }
 
+    .gallery-item {
+      background: var(--card-item-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: var(--card-item-shadow);
+      opacity: 0;
+      transform: translateY(28px);
+      transition:
+        opacity 0.55s ease,
+        transform 0.55s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
+    }
+
+    .gallery-item.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .gallery-item:nth-child(1) { transition-delay: 0s; }
+    .gallery-item:nth-child(2) { transition-delay: 0.12s; }
+    .gallery-item:nth-child(3) { transition-delay: 0.24s; }
+
+    .gallery-item.is-visible:nth-child(1) { transition-delay: 0.05s; }
+    .gallery-item.is-visible:nth-child(2) { transition-delay: 0.18s; }
+    .gallery-item.is-visible:nth-child(3) { transition-delay: 0.3s; }
+
+    .gallery-item:hover {
+      transform: translateY(-6px);
+      border-color: var(--green);
+      box-shadow: 0 14px 32px rgba(37, 179, 75, 0.18);
+    }
+
+    .gallery-item.is-visible:hover {
+      transform: translateY(-6px);
+    }
+
+    .gallery-media {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gallery-media::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 4px;
+      background: var(--green);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.35s ease;
+    }
+
+    .gallery-item:hover .gallery-media::after {
+      transform: scaleX(1);
+    }
+
     .gallery-item img {
       width: 100%;
       aspect-ratio: 4 / 3;
       object-fit: cover;
-      border-radius: 10px;
       display: block;
       background: var(--input-bg);
+      transition: transform 0.45s ease;
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.05);
     }
 
     .gallery-caption {
-      margin-top: 10px;
+      padding: 14px 14px 16px;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--text);
       line-height: 1.4;
     }
@@ -505,7 +573,19 @@
       display: block;
       font-weight: 300;
       color: var(--muted);
-      margin-top: 2px;
+      margin-top: 4px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .gallery-item,
+      .gallery-item img,
+      .gallery-media::after {
+        transition: none;
+      }
+      .gallery-item {
+        opacity: 1;
+        transform: none;
+      }
     }
 
     /* Footer */
@@ -666,21 +746,27 @@
     <div class="gallery-panel">
       <div class="gallery-grid">
         <article class="gallery-item">
-          <img src="assets/hero-premium-house.jpg" alt="Residential solar installation" />
+          <div class="gallery-media">
+            <img src="assets/hero-premium-house.jpg" alt="Residential solar installation" />
+          </div>
           <div class="gallery-caption">
             Premium residential install
             <span>Clean power for your home</span>
           </div>
         </article>
         <article class="gallery-item">
-          <img src="assets/hero-house.png" alt="Home with solar system" />
+          <div class="gallery-media">
+            <img src="assets/hero-house.png" alt="Home with solar system" />
+          </div>
           <div class="gallery-caption">
             Whole-home solar
             <span>Engineered for efficiency</span>
           </div>
         </article>
         <article class="gallery-item">
-          <img src="assets/hero-roof.jpg" alt="Roof solar array" />
+          <div class="gallery-media">
+            <img src="assets/hero-roof.jpg" alt="Roof solar array" />
+          </div>
           <div class="gallery-caption">
             Precision roof arrays
             <span>Built for Canadian homes</span>
@@ -953,6 +1039,25 @@
   });
 
   init();
+
+  // Animate install cards when they enter the viewport
+  const galleryItems = document.querySelectorAll('.gallery-item');
+  if ('IntersectionObserver' in window && galleryItems.length) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.2, rootMargin: '0px 0px -40px 0px' }
+    );
+    galleryItems.forEach((item) => observer.observe(item));
+  } else {
+    galleryItems.forEach((item) => item.classList.add('is-visible'));
+  }
 </script>
 </body>
 </html>
