@@ -40,9 +40,9 @@ export default async function handler(req, res) {
       amountCents = price.unit_amount;
       currency = (price.currency || currency).toLowerCase();
 
-      // Keep display/description as Total Deposit; only sync product id from Stripe.
       if (typeof price.product === 'object' && price.product && !price.product.deleted) {
         productId = price.product.id || productId;
+        if (price.product.name) productName = price.product.name;
       } else if (typeof price.product === 'string') {
         productId = price.product;
       }
