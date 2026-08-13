@@ -997,7 +997,28 @@
 
       document.getElementById('stripe-placeholder').style.display = 'none';
       document.getElementById('payment-element').style.display = 'block';
-      elements.create('payment').mount('#payment-element');
+
+      // Hide Stripe's basic country dropdown — we already collect customer details
+      // and default billing country to Canada for CAD deposits.
+      const paymentElement = elements.create('payment', {
+        layout: 'tabs',
+        defaultValues: {
+          billingDetails: {
+            address: {
+              country: 'CA',
+            },
+          },
+        },
+        fields: {
+          billingDetails: {
+            name: 'never',
+            email: 'never',
+            phone: 'never',
+            address: 'never',
+          },
+        },
+      });
+      paymentElement.mount('#payment-element');
       checkoutReady = true;
       document.getElementById('submit-btn').disabled = false;
       showState('pay');
@@ -1041,6 +1062,9 @@
             email,
             name,
             phone: phone || undefined,
+            address: {
+              country: 'CA',
+            },
           },
         },
       },
