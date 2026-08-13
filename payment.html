@@ -215,6 +215,24 @@
       padding: 16px 18px;
       margin: 22px 0 24px;
       border: 1px solid var(--border);
+      opacity: 0;
+      transform: translateY(24px);
+      transition:
+        opacity 0.55s ease,
+        transform 0.55s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
+    }
+
+    .summary.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .summary.is-visible:hover {
+      transform: translateY(-4px);
+      border-color: var(--green);
+      box-shadow: 0 10px 24px rgba(37, 179, 75, 0.14);
     }
 
     .summary-row {
@@ -604,10 +622,12 @@
     @media (prefers-reduced-motion: reduce) {
       .gallery-item,
       .gallery-item img,
-      .gallery-media::after {
+      .gallery-media::after,
+      .summary {
         transition: none;
       }
-      .gallery-item {
+      .gallery-item,
+      .summary {
         opacity: 1;
         transform: none;
       }
@@ -1090,9 +1110,9 @@
 
   init();
 
-  // Animate install cards when they enter the viewport
-  const galleryItems = document.querySelectorAll('.gallery-item');
-  if ('IntersectionObserver' in window && galleryItems.length) {
+  // Animate summary stripe + install cards when they enter the viewport
+  const animatedItems = document.querySelectorAll('.summary, .gallery-item');
+  if ('IntersectionObserver' in window && animatedItems.length) {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -1104,9 +1124,9 @@
       },
       { threshold: 0.2, rootMargin: '0px 0px -40px 0px' }
     );
-    galleryItems.forEach((item) => observer.observe(item));
+    animatedItems.forEach((item) => observer.observe(item));
   } else {
-    galleryItems.forEach((item) => item.classList.add('is-visible'));
+    animatedItems.forEach((item) => item.classList.add('is-visible'));
   }
 </script>
 </body>
