@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solar Installation Deposit — Solve Energy</title>
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --core: #1C2418;
+      --concrete: #E8ECE1;
+      --sky: #B9DAE7;
+      --green: #25B34B;
+      --green-dark: #1e943c;
+      --yellow: #FBE017;
+      --white: #FFFFFF;
+      --muted: #5A6455;
+      --border: #D5D9CF;
+      --error: #C0392B;
+      --success: #25B34B;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', Arial, Helvetica, sans-serif;
+      background: var(--concrete);
+      color: var(--core);
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 20px 64px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .logo {
+      display: inline-flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .logo-img {
+      display: block;
+      width: 180px;
+      max-width: 55vw;
+      height: auto;
+      /* Core-coloured mark on Concrete background */
+      filter: brightness(0) saturate(100%);
+      opacity: 0.92;
+    }
+
+    .intro {
+      font-weight: 300;
+      font-size: 15px;
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* Payment card */
+    .card {
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(28, 36, 24, 0.08);
+      border: 1px solid rgba(28, 36, 24, 0.06);
+      padding: 36px 32px;
+      margin-bottom: 48px;
+    }
+
+    @media (max-width: 560px) {
+      .page { padding: 28px 14px 48px; }
+      .card { padding: 28px 18px; border-radius: 14px; }
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+
+    .card h1 {
+      font-size: 26px;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      color: var(--core);
+      margin-bottom: 6px;
+    }
+
+    .card-sub {
+      font-weight: 300;
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--core);
+      margin: 0 0 12px;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .field input {
+      width: 100%;
+      background: var(--concrete);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 14px;
+      font-size: 15px;
+      font-family: inherit;
+      font-weight: 400;
+      color: var(--core);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .field input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(37, 179, 75, 0.15);
+      background: var(--white);
+    }
+
+    .field input::placeholder { color: #9AA193; }
+
+    .fields-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 560px) {
+      .fields-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Order summary */
+    .summary {
+      background: var(--concrete);
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin: 22px 0 24px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+    }
+
+    .summary-row + .summary-row {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .summary-item {
+      font-weight: 500;
+      color: var(--core);
+    }
+
+    .summary-meta {
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .summary-price {
+      font-weight: 600;
+      color: var(--green);
+      font-size: 16px;
+      white-space: nowrap;
+    }
+
+    .summary-total-label {
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .summary-total-price {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--core);
+    }
+
+    #payment-element {
+      margin: 4px 0 8px;
+      min-height: 40px;
+    }
+
+    .stripe-placeholder {
+      display: none;
+      background: var(--concrete);
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      padding: 18px 16px;
+      margin: 4px 0 16px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.55;
+    }
+
+    .stripe-placeholder strong {
+      color: var(--core);
+      font-weight: 600;
+    }
+
+    .error-banner,
+    .info-banner {
+      display: none;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .error-banner {
+      background: rgba(192, 57, 43, 0.08);
+      border: 1px solid rgba(192, 57, 43, 0.25);
+      color: var(--error);
+    }
+
+    .info-banner {
+      background: rgba(185, 218, 231, 0.45);
+      border: 1px solid rgba(185, 218, 231, 0.9);
+      color: var(--core);
+    }
+
+    .error-banner.visible,
+    .info-banner.visible { display: block; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      background: var(--green);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      padding: 16px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      margin-top: 8px;
+    }
+
+    .btn:hover { background: var(--green-dark); }
+    .btn:active { transform: scale(0.99); }
+    .btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .btn svg { flex-shrink: 0; }
+
+    .trust {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--muted);
+    }
+
+    .trust svg { color: var(--green); }
+
+    /* States overlay inside card */
+    .state { display: none; }
+    .state.active { display: block; }
+
+    .state-center { text-align: center; padding: 24px 8px; }
+
+    .spinner {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 3px solid var(--border);
+      border-top-color: var(--green);
+      animation: spin 0.9s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .status-icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 20px;
+    }
+
+    .complete-circle {
+      fill: rgba(37, 179, 75, 0.12);
+      stroke: var(--green);
+      stroke-width: 2;
+      stroke-dasharray: 151;
+      stroke-dashoffset: 151;
+    }
+
+    .complete-check {
+      fill: none;
+      stroke: var(--green);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 48;
+      stroke-dashoffset: 48;
+    }
+
+    .is-ready .complete-circle { animation: drawCircle 0.55s ease forwards; }
+    .is-ready .complete-check { animation: drawCheck 0.4s 0.45s ease forwards; }
+
+    @keyframes drawCircle { to { stroke-dashoffset: 0; } }
+    @keyframes drawCheck { to { stroke-dashoffset: 0; } }
+
+    .error-badge {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 2px solid var(--error);
+      background: rgba(192, 57, 43, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin: 0 auto 20px;
+    }
+
+    .state-center h2 {
+      font-size: 22px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .state-center p {
+      font-weight: 300;
+      font-size: 14px;
+      color: var(--muted);
+      max-width: 400px;
+      margin: 0 auto 16px;
+      line-height: 1.65;
+    }
+
+    .paid-amount {
+      font-weight: 600;
+      color: var(--green);
+      font-size: 16px;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--core);
+      border: 1px solid var(--border);
+      margin-top: 8px;
+    }
+
+    .btn-secondary:hover {
+      background: var(--concrete);
+    }
+
+    /* Gallery */
+    .gallery {
+      margin-bottom: 40px;
+    }
+
+    .gallery-head {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .gallery-head h2 {
+      font-size: 28px;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .gallery-head p {
+      font-weight: 300;
+      font-size: 14px;
+      color: var(--muted);
+      max-width: 440px;
+      margin: 0 auto;
+      line-height: 1.65;
+    }
+
+    .gallery-panel {
+      background: var(--sky);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    @media (max-width: 640px) {
+      .gallery-grid { grid-template-columns: 1fr; }
+      .gallery-head h2 { font-size: 24px; }
+    }
+
+    .gallery-item img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      border-radius: 10px;
+      display: block;
+      background: rgba(28, 36, 24, 0.08);
+    }
+
+    .gallery-caption {
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--core);
+      line-height: 1.4;
+    }
+
+    .gallery-caption span {
+      display: block;
+      font-weight: 300;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding-top: 8px;
+    }
+
+    .footer-tagline {
+      font-size: 15px;
+      font-weight: 500;
+      font-style: italic;
+      color: var(--core);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .footer-contact {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--muted);
+    }
+
+    .footer-contact a {
+      color: var(--core);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer-contact a:hover {
+      color: var(--green);
+    }
+
+    .yellow-accent {
+      display: inline-block;
+      width: 40px;
+      height: 3px;
+      background: var(--yellow);
+      border-radius: 2px;
+      margin: 0 auto 16px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="header">
+    <div class="logo">
+      <img
+        class="logo-img"
+        src="assets/solve-logo.png"
+        alt="Solve Energy"
+      />
+    </div>
+    <p class="intro">
+      This deposit confirms your place in our installation pipeline and allows us to begin
+      the planning process to ensure a smooth, efficient install.
+    </p>
+  </header>
+
+  <main class="card">
+
+    <!-- Loading -->
+    <div id="state-loading" class="state state-center active">
+      <div class="spinner"></div>
+      <h2>Preparing secure checkout</h2>
+      <p>Setting up your Solve Energy deposit…</p>
+    </div>
+
+    <!-- Pay -->
+    <div id="state-pay" class="state">
+      <div class="eyebrow">Secure checkout</div>
+      <h1>Solar Installation Deposit</h1>
+      <p class="card-sub">Provide your information below to complete your project deposit.</p>
+
+      <div class="error-banner" id="pay-error"></div>
+      <div class="info-banner" id="pay-info"></div>
+
+      <div class="section-label">Your details</div>
+      <div class="field">
+        <label for="customer-name">Full name</label>
+        <input id="customer-name" type="text" autocomplete="name" placeholder="First and last name" />
+      </div>
+      <div class="fields-grid">
+        <div class="field">
+          <label for="customer-email">Email address</label>
+          <input id="customer-email" type="email" autocomplete="email" placeholder="you@example.com" required />
+        </div>
+        <div class="field">
+          <label for="customer-phone">Phone number</label>
+          <input id="customer-phone" type="tel" autocomplete="tel" placeholder="(555) 000-0000" />
+        </div>
+      </div>
+
+      <div class="summary">
+        <div class="summary-row">
+          <div>
+            <div class="summary-item" id="product-display">Solve Energy Project Deposit (New)</div>
+            <div class="summary-meta">Quantity: 1</div>
+          </div>
+          <div class="summary-price" id="amount-display">CA$1,031.00</div>
+        </div>
+        <div class="summary-row">
+          <div class="summary-total-label">Order total</div>
+          <div class="summary-total-price" id="total-display">CA$1,031.00</div>
+        </div>
+      </div>
+
+      <div class="section-label">Payment</div>
+      <div id="payment-element"></div>
+      <div class="stripe-placeholder" id="stripe-placeholder">
+        <strong>Stripe card form will appear here</strong><br />
+        Add your Stripe secret key in Vercel to enable live payments.
+      </div>
+
+      <button class="btn" id="submit-btn" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <rect x="3" y="11" width="18" height="11" rx="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+        <span id="submit-text">Complete Deposit</span>
+      </button>
+
+      <div class="trust">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+        <span>100% secure &amp; safe payments · Powered by Stripe</span>
+      </div>
+    </div>
+
+    <!-- Success -->
+    <div id="state-success" class="state state-center">
+      <div class="status-icon is-ready" id="success-visual">
+        <svg width="72" height="72" viewBox="0 0 52 52" aria-hidden="true">
+          <circle class="complete-circle" cx="26" cy="26" r="24" />
+          <path class="complete-check" d="M14 27 l8 8 l16-16" />
+        </svg>
+      </div>
+      <div class="eyebrow">Payment received</div>
+      <h2>Thank you</h2>
+      <p>
+        Your Solve Energy project deposit is confirmed. A receipt will be emailed to you shortly,
+        and our team will follow up to keep your install moving forward.
+      </p>
+      <p class="paid-amount" id="success-amount"></p>
+    </div>
+
+    <!-- Error -->
+    <div id="state-error" class="state state-center">
+      <div class="error-badge">⚠️</div>
+      <h2>Something went wrong</h2>
+      <p id="error-message">We couldn't start checkout. Please try again or contact us.</p>
+      <button class="btn btn-secondary" type="button" onclick="window.location.reload()">Try again</button>
+    </div>
+  </main>
+
+  <section class="gallery" aria-label="Solar installs">
+    <div class="gallery-head">
+      <div class="yellow-accent"></div>
+      <h2>See Our Solar Installs</h2>
+      <p>Join the movement in building a cleaner, brighter tomorrow powered by green energy.</p>
+    </div>
+    <div class="gallery-panel">
+      <div class="gallery-grid">
+        <article class="gallery-item">
+          <img src="assets/hero-premium-house.jpg" alt="Residential solar installation" />
+          <div class="gallery-caption">
+            Premium residential install
+            <span>Clean power for your home</span>
+          </div>
+        </article>
+        <article class="gallery-item">
+          <img src="assets/hero-house.png" alt="Home with solar system" />
+          <div class="gallery-caption">
+            Whole-home solar
+            <span>Engineered for efficiency</span>
+          </div>
+        </article>
+        <article class="gallery-item">
+          <img src="assets/hero-roof.jpg" alt="Roof solar array" />
+          <div class="gallery-caption">
+            Precision roof arrays
+            <span>Built for Canadian homes</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p class="footer-tagline">
+      Take the first step towards energy independence. Start saving with Solve.
+    </p>
+    <p class="footer-contact">
+      <a href="mailto:projects@solveenergy.ca">projects@solveenergy.ca</a>
+      &nbsp;·&nbsp;
+      <a href="tel:+18886676583">+1 888-667-6583</a>
+    </p>
+  </footer>
+
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const BASE = window.location.origin;
+
+  let stripe;
+  let elements;
+  let amountCents = 103100;
+  let activeCurrency = 'cad';
+  let checkoutReady = false;
+  const DEFAULT_PRODUCT = 'Solve Energy Project Deposit (New)';
+
+  function showState(name) {
+    ['state-loading', 'state-pay', 'state-success', 'state-error'].forEach((id) => {
+      document.getElementById(id).classList.toggle('active', id === `state-${name}`);
+    });
+  }
+
+  function formatMoney(cents, curr) {
+    try {
+      return new Intl.NumberFormat('en-CA', {
+        style: 'currency',
+        currency: (curr || 'CAD').toUpperCase(),
+      }).format(cents / 100);
+    } catch {
+      return `CA$${(cents / 100).toFixed(2)}`;
+    }
+  }
+
+  function decodeParam(value) {
+    if (!value) return '';
+    try {
+      return decodeURIComponent(value).trim();
+    } catch {
+      return String(value).trim();
+    }
+  }
+
+  function showPayError(message) {
+    const el = document.getElementById('pay-error');
+    el.textContent = message || 'Payment failed. Please try again.';
+    el.classList.add('visible');
+  }
+
+  function clearPayError() {
+    const el = document.getElementById('pay-error');
+    el.textContent = '';
+    el.classList.remove('visible');
+  }
+
+  function applyOrderSummary(cents, currency, productName) {
+    amountCents = cents;
+    activeCurrency = currency || 'cad';
+    const money = formatMoney(amountCents, activeCurrency);
+    document.getElementById('amount-display').textContent = money;
+    document.getElementById('total-display').textContent = money;
+    document.getElementById('product-display').textContent = productName || DEFAULT_PRODUCT;
+    document.getElementById('submit-text').textContent = `Complete Deposit · ${money}`;
+  }
+
+  function showBrandedPreview(message) {
+    applyOrderSummary(103100, 'cad', DEFAULT_PRODUCT);
+    document.getElementById('payment-element').style.display = 'none';
+    document.getElementById('stripe-placeholder').style.display = 'block';
+    const info = document.getElementById('pay-info');
+    info.textContent = message || 'Stripe secret key is not configured yet. Add it in Vercel to enable card payments.';
+    info.classList.add('visible');
+    document.getElementById('submit-btn').disabled = true;
+    showState('pay');
+  }
+
+  async function init() {
+    const redirectStatus = params.get('redirect_status');
+    if (params.get('payment_intent') && redirectStatus === 'succeeded') {
+      document.getElementById('success-amount').textContent = 'Your deposit was completed successfully.';
+      showState('success');
+      return;
+    }
+    if (params.get('payment_intent') && redirectStatus && redirectStatus !== 'succeeded') {
+      document.getElementById('error-message').textContent = 'Payment was not completed. Please try again.';
+      showState('error');
+      return;
+    }
+
+    const emailFromUrl = decodeParam(params.get('email') || params.get('contact_email'));
+    const nameFromUrl = decodeParam(params.get('name') || params.get('contact_name') || params.get('full_name'));
+    const phoneFromUrl = decodeParam(params.get('phone') || params.get('contact_phone'));
+    const jobId = decodeParam(params.get('job_id') || params.get('jobId'));
+    const description = decodeParam(params.get('description'));
+
+    if (emailFromUrl) document.getElementById('customer-email').value = emailFromUrl;
+    if (nameFromUrl) document.getElementById('customer-name').value = nameFromUrl;
+    if (phoneFromUrl) document.getElementById('customer-phone').value = phoneFromUrl;
+
+    try {
+      const configRes = await fetch(`${BASE}/api/payment-config`);
+      const config = await configRes.json();
+      if (!configRes.ok) {
+        showBrandedPreview(config.error || 'Stripe publishable key is not configured');
+        return;
+      }
+
+      applyOrderSummary(config.amountCents, config.currency, config.productName || DEFAULT_PRODUCT);
+
+      const intentRes = await fetch(`${BASE}/api/create-payment-intent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: document.getElementById('customer-email').value,
+          name: document.getElementById('customer-name').value,
+          job_id: jobId,
+          description,
+        }),
+      });
+      const intent = await intentRes.json();
+      if (!intentRes.ok) {
+        showBrandedPreview(intent.error || 'Stripe secret key is not configured');
+        return;
+      }
+
+      stripe = Stripe(config.publishableKey);
+      elements = stripe.elements({
+        clientSecret: intent.clientSecret,
+        appearance: {
+          theme: 'stripe',
+          variables: {
+            colorPrimary: '#25B34B',
+            colorBackground: '#FFFFFF',
+            colorText: '#1C2418',
+            colorDanger: '#C0392B',
+            fontFamily: 'Inter, system-ui, sans-serif',
+            borderRadius: '10px',
+            spacingUnit: '4px',
+          },
+          rules: {
+            '.Input': {
+              backgroundColor: '#E8ECE1',
+              borderColor: '#D5D9CF',
+            },
+            '.Input:focus': {
+              borderColor: '#25B34B',
+              boxShadow: '0 0 0 3px rgba(37, 179, 75, 0.15)',
+            },
+            '.Label': {
+              color: '#5A6455',
+              fontWeight: '500',
+            },
+          },
+        },
+      });
+
+      document.getElementById('stripe-placeholder').style.display = 'none';
+      document.getElementById('payment-element').style.display = 'block';
+      elements.create('payment').mount('#payment-element');
+      checkoutReady = true;
+      document.getElementById('submit-btn').disabled = false;
+      showState('pay');
+    } catch (e) {
+      console.error(e);
+      showBrandedPreview(e.message || 'Unable to start Stripe checkout yet.');
+    }
+  }
+
+  document.getElementById('submit-btn').addEventListener('click', async () => {
+    clearPayError();
+    if (!checkoutReady || !stripe || !elements) {
+      showPayError('Stripe is not ready yet. Add your secret key in Vercel, then refresh.');
+      return;
+    }
+
+    const email = document.getElementById('customer-email').value.trim();
+    const name = document.getElementById('customer-name').value.trim();
+    const phone = document.getElementById('customer-phone').value.trim();
+
+    if (!name) {
+      showPayError('Please enter your full name.');
+      return;
+    }
+    if (!email || !email.includes('@')) {
+      showPayError('Please enter a valid email address.');
+      return;
+    }
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    document.getElementById('submit-text').textContent = 'Processing…';
+
+    const { error, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/payment.html`,
+        receipt_email: email,
+        payment_method_data: {
+          billing_details: {
+            email,
+            name,
+            phone: phone || undefined,
+          },
+        },
+      },
+      redirect: 'if_required',
+    });
+
+    if (error) {
+      showPayError(error.message);
+      btn.disabled = false;
+      document.getElementById('submit-text').textContent = `Complete Deposit · ${formatMoney(amountCents, activeCurrency)}`;
+      return;
+    }
+
+    if (paymentIntent && (paymentIntent.status === 'succeeded' || paymentIntent.status === 'processing')) {
+      document.getElementById('success-amount').textContent = `Paid ${formatMoney(amountCents, activeCurrency)}`;
+      showState('success');
+      return;
+    }
+
+    document.getElementById('success-amount').textContent = 'Your payment is being confirmed…';
+    showState('success');
+  });
+
+  init();
+</script>
+</body>
+</html>

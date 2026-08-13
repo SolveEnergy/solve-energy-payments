@@ -1,0 +1,7 @@
+{
+  "name": "solve-energy-payments",
+  "private": true,
+  "dependencies": {
+    "stripe": "^22.5.0"
+  }
+}
