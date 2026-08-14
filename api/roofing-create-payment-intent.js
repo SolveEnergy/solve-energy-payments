@@ -1,0 +1,86 @@
+import Stripe from 'stripe';
+
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  const secretKey = process.env.ROOFING_STRIPE_SECRET_KEY;
+  if (!secretKey) {
+    return res.status(500).json({ error: 'Roofing Stripe secret key is not configured' });
+  }
+
+  const priceId = process.env.ROOFING_STRIPE_PRICE_ID;
+  const productIdFallback = process.env.ROOFING_STRIPE_PRODUCT_ID || '';
+  const productName = 'Total Deposit';
+
+  const { email, name, job_id, description } = req.body || {};
+
+  try {
+    const stripe = new Stripe(secretKey);
+
+    let amountCents = Number(process.env.ROOFING_PAYMENT_AMOUNT_CENTS || '0');
+    let currency = (process.env.ROOFING_PAYMENT_CURRENCY || 'cad').toLowerCase();
+    let productId = productIdFallback;
+
+    if (priceId) {
+      const price = await stripe.prices.retrieve(priceId, { expand: ['product'] });
+
+      if (price.unit_amount == null) {
+        return res.status(500).json({ error: 'Roofing Stripe price must be a fixed one-time amount' });
+      }
+      if (price.type && price.type !== 'one_time') {
+        return res.status(500).json({ error: 'Roofing Stripe price must be a one-time price for deposits' });
+      }
+
+      amountCents = price.unit_amount;
+      currency = (price.currency || currency).toLowerCase();
+
+      if (typeof price.product === 'object' && price.product && !price.product.deleted) {
+        productId = price.product.id || productId;
+      } else if (typeof price.product === 'string') {
+        productId = price.product;
+      }
+    }
+
+    if (!Number.isFinite(amountCents) || amountCents < 50) {
+      return res.status(500).json({ error: 'Invalid Roofing payment amount. Add ROOFING_STRIPE_PRICE_ID in Vercel.' });
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amountCents,
+      currency,
+      automatic_payment_methods: { enabled: true },
+      receipt_email: typeof email === 'string' && email.includes('@') ? email.trim() : undefined,
+      description: typeof description === 'string' && description.trim()
+        ? description.trim()
+        : productName,
+      metadata: {
+        source: 'solve-energy-payments',
+        brand: 'solve-roofing',
+        price_id: priceId || '',
+        product_id: productId,
+        product_name: productName,
+        job_id: typeof job_id === 'string' ? job_id : '',
+        customer_name: typeof name === 'string' ? name : '',
+        customer_email: typeof email === 'string' ? email : '',
+      },
+    });
+
+    return res.status(200).json({
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id,
+      amountCents,
+      currency,
+      productName,
+      productId,
+      priceId: priceId || null,
+    });
+  } catch (e) {
+    console.error('roofing-create-payment-intent error:', e);
+    return res.status(500).json({ error: e.message || 'Failed to create Roofing payment' });
+  }
+}
