@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+import { loadRoofingPrice } from '../lib/roofing-stripe.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -13,57 +14,30 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Roofing Stripe secret key is not configured' });
   }
 
-  const priceId = process.env.ROOFING_STRIPE_PRICE_ID;
-  const productIdFallback = process.env.ROOFING_STRIPE_PRODUCT_ID || '';
-  const productName = 'Total Deposit';
-
   const { email, name, job_id, description } = req.body || {};
 
   try {
     const stripe = new Stripe(secretKey);
+    const catalog = await loadRoofingPrice(stripe);
 
-    let amountCents = Number(process.env.ROOFING_PAYMENT_AMOUNT_CENTS || '0');
-    let currency = (process.env.ROOFING_PAYMENT_CURRENCY || 'cad').toLowerCase();
-    let productId = productIdFallback;
-
-    if (priceId) {
-      const price = await stripe.prices.retrieve(priceId, { expand: ['product'] });
-
-      if (price.unit_amount == null) {
-        return res.status(500).json({ error: 'Roofing Stripe price must be a fixed one-time amount' });
-      }
-      if (price.type && price.type !== 'one_time') {
-        return res.status(500).json({ error: 'Roofing Stripe price must be a one-time price for deposits' });
-      }
-
-      amountCents = price.unit_amount;
-      currency = (price.currency || currency).toLowerCase();
-
-      if (typeof price.product === 'object' && price.product && !price.product.deleted) {
-        productId = price.product.id || productId;
-      } else if (typeof price.product === 'string') {
-        productId = price.product;
-      }
-    }
-
-    if (!Number.isFinite(amountCents) || amountCents < 50) {
-      return res.status(500).json({ error: 'Invalid Roofing payment amount. Add ROOFING_STRIPE_PRICE_ID in Vercel.' });
+    if (!Number.isFinite(catalog.amountCents) || catalog.amountCents < 50) {
+      return res.status(500).json({ error: 'Invalid Roofing payment amount configuration' });
     }
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: amountCents,
-      currency,
+      amount: catalog.amountCents,
+      currency: catalog.currency,
       automatic_payment_methods: { enabled: true },
       receipt_email: typeof email === 'string' && email.includes('@') ? email.trim() : undefined,
       description: typeof description === 'string' && description.trim()
         ? description.trim()
-        : productName,
+        : catalog.productName,
       metadata: {
         source: 'solve-energy-payments',
         brand: 'solve-roofing',
-        price_id: priceId || '',
-        product_id: productId,
-        product_name: productName,
+        price_id: catalog.priceId,
+        product_id: catalog.productId,
+        product_name: catalog.productName,
         job_id: typeof job_id === 'string' ? job_id : '',
         customer_name: typeof name === 'string' ? name : '',
         customer_email: typeof email === 'string' ? email : '',
@@ -73,11 +47,11 @@ export default async function handler(req, res) {
     return res.status(200).json({
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
-      amountCents,
-      currency,
-      productName,
-      productId,
-      priceId: priceId || null,
+      amountCents: catalog.amountCents,
+      currency: catalog.currency,
+      productName: catalog.productName,
+      productId: catalog.productId,
+      priceId: catalog.priceId,
     });
   } catch (e) {
     console.error('roofing-create-payment-intent error:', e);

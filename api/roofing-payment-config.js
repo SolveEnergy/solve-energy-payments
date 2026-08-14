@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+import { loadRoofingPrice } from '../lib/roofing-stripe.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -10,51 +11,32 @@ export default async function handler(req, res) {
 
   const publishableKey = process.env.ROOFING_STRIPE_PUBLISHABLE_KEY;
   const secretKey = process.env.ROOFING_STRIPE_SECRET_KEY;
-  const priceId = process.env.ROOFING_STRIPE_PRICE_ID;
-  const productIdFallback = process.env.ROOFING_STRIPE_PRODUCT_ID || '';
-  const productName = 'Total Deposit';
 
   if (!publishableKey) {
     return res.status(500).json({ error: 'Roofing Stripe publishable key is not configured' });
   }
+  if (!secretKey) {
+    return res.status(500).json({ error: 'Roofing Stripe secret key is not configured' });
+  }
 
-  let amountCents = Number(process.env.ROOFING_PAYMENT_AMOUNT_CENTS || '0');
-  let currency = (process.env.ROOFING_PAYMENT_CURRENCY || 'cad').toLowerCase();
-  let productId = productIdFallback;
+  try {
+    const stripe = new Stripe(secretKey);
+    const catalog = await loadRoofingPrice(stripe);
 
-  if (priceId && secretKey) {
-    try {
-      const stripe = new Stripe(secretKey);
-      const price = await stripe.prices.retrieve(priceId, { expand: ['product'] });
-
-      if (price.unit_amount == null) {
-        return res.status(500).json({ error: 'Roofing Stripe price must be a fixed one-time amount' });
-      }
-
-      amountCents = price.unit_amount;
-      currency = (price.currency || currency).toLowerCase();
-
-      if (typeof price.product === 'object' && price.product && !price.product.deleted) {
-        productId = price.product.id || productId;
-      } else if (typeof price.product === 'string') {
-        productId = price.product;
-      }
-    } catch (e) {
-      console.error('Failed to load Roofing Stripe price for config:', e);
-      return res.status(500).json({ error: e.message || 'Failed to load Roofing Stripe price' });
+    if (!Number.isFinite(catalog.amountCents) || catalog.amountCents < 50) {
+      return res.status(500).json({ error: 'Invalid Roofing payment amount' });
     }
-  }
 
-  if (!Number.isFinite(amountCents) || amountCents < 50) {
-    return res.status(500).json({ error: 'Invalid Roofing payment amount. Add ROOFING_STRIPE_PRICE_ID in Vercel.' });
+    return res.status(200).json({
+      publishableKey,
+      amountCents: catalog.amountCents,
+      currency: catalog.currency,
+      productName: catalog.productName,
+      productId: catalog.productId,
+      priceId: catalog.priceId,
+    });
+  } catch (e) {
+    console.error('Failed to load Roofing Stripe price for config:', e);
+    return res.status(500).json({ error: e.message || 'Failed to load Roofing Stripe price' });
   }
-
-  return res.status(200).json({
-    publishableKey,
-    amountCents,
-    currency,
-    productName,
-    productId,
-    priceId: priceId || null,
-  });
 }
