@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solar Installation Deposit — Solve Energy</title>
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --core: #1C2418;
+      --concrete: #E8ECE1;
+      --sky: #B9DAE7;
+      --green: #25B34B;
+      --green-dark: #1e943c;
+      --yellow: #FBE017;
+      --white: #FFFFFF;
+      --error: #C0392B;
+      --success: #25B34B;
+
+      /* Light mode (default) */
+      --bg: var(--concrete);
+      --surface: var(--white);
+      --text: var(--core);
+      --muted: #5A6455;
+      --border: #D5D9CF;
+      --input-bg: var(--concrete);
+      --input-focus-bg: var(--white);
+      --placeholder: #9AA193;
+      --card-shadow: 0 8px 30px rgba(28, 36, 24, 0.08);
+      --gallery-panel: transparent;
+      --card-item-bg: var(--white);
+      --card-item-shadow: 0 6px 20px rgba(28, 36, 24, 0.08);
+      --logo-filter: brightness(0) saturate(100%);
+      --info-bg: rgba(185, 218, 231, 0.45);
+      --info-border: rgba(185, 218, 231, 0.9);
+      --error-bg: rgba(192, 57, 43, 0.08);
+      --error-border: rgba(192, 57, 43, 0.25);
+      --spinner-track: var(--border);
+      color-scheme: light;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121710;
+        --surface: #1C2418;
+        --text: #E8ECE1;
+        --muted: #B9C0B2;
+        --border: #3A4336;
+        --input-bg: #121710;
+        --input-focus-bg: #252D20;
+        --placeholder: #7A8272;
+        --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+        --gallery-panel: transparent;
+        --card-item-bg: #1C2418;
+        --card-item-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        --logo-filter: brightness(0) invert(1);
+        --info-bg: rgba(185, 218, 231, 0.12);
+        --info-border: rgba(185, 218, 231, 0.28);
+        --error-bg: rgba(239, 68, 68, 0.12);
+        --error-border: rgba(239, 68, 68, 0.35);
+        --spinner-track: #3A4336;
+        --error: #F87171;
+        color-scheme: dark;
+      }
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 20px 64px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .logo {
+      display: inline-flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .logo-img {
+      display: block;
+      width: 180px;
+      max-width: 55vw;
+      height: auto;
+      filter: var(--logo-filter);
+      opacity: 0.92;
+    }
+
+    .intro {
+      font-weight: 300;
+      font-size: 15px;
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* Payment card */
+    .card {
+      background: var(--surface);
+      border-radius: 16px;
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border);
+      padding: 36px 32px;
+      margin-bottom: 48px;
+    }
+
+    @media (max-width: 560px) {
+      .page { padding: 28px 14px 48px; }
+      .card { padding: 28px 18px; border-radius: 14px; }
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+
+    .card h1 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .card-sub {
+      font-weight: 300;
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text);
+      margin: 0 0 12px;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .field input {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 14px;
+      font-size: 15px;
+      font-family: inherit;
+      font-weight: 400;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+
+    .field input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(37, 179, 75, 0.15);
+      background: var(--input-focus-bg);
+    }
+
+    .field input::placeholder { color: var(--placeholder); }
+
+    .territory-field {
+      margin-top: 14px;
+      margin-bottom: 4px;
+    }
+
+    .country-picker {
+      position: relative;
+    }
+
+    .country-trigger {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 14px;
+      font-size: 15px;
+      font-family: inherit;
+      font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+
+    .country-trigger:hover {
+      border-color: #B7BEB0;
+    }
+
+    .country-trigger:focus,
+    .country-picker.is-open .country-trigger {
+      outline: none;
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(37, 179, 75, 0.15);
+      background: var(--input-focus-bg);
+    }
+
+    .country-chevron {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      color: var(--muted);
+      transition: transform 0.2s ease, color 0.15s ease;
+    }
+
+    .country-picker.is-open .country-chevron {
+      transform: rotate(180deg);
+      color: var(--green);
+    }
+
+    .country-panel {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 8px);
+      z-index: 50;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 16px 36px rgba(28, 36, 24, 0.14);
+      overflow: hidden;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-4px);
+      transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s;
+      pointer-events: none;
+    }
+
+    .country-picker.is-open .country-panel {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .country-list {
+      max-height: 220px;
+      overflow-y: auto;
+      padding: 6px;
+      overscroll-behavior: contain;
+    }
+
+    .country-option {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border: 0;
+      background: transparent;
+      border-radius: 8px;
+      padding: 11px 12px;
+      font-size: 14px;
+      font-family: inherit;
+      font-weight: 400;
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.12s ease, color 0.12s ease;
+    }
+
+    .country-option:hover {
+      background: rgba(37, 179, 75, 0.08);
+    }
+
+    .country-option.is-selected {
+      background: rgba(37, 179, 75, 0.14);
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .country-check {
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+      color: var(--green);
+      opacity: 0;
+    }
+
+    .country-option.is-selected .country-check {
+      opacity: 1;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .country-panel {
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+      }
+      .country-trigger:hover {
+        border-color: #4A5446;
+      }
+    }
+
+    .fields-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 560px) {
+      .fields-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Order summary */
+    .summary {
+      background: var(--input-bg);
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin: 22px 0 24px;
+      border: 1px solid var(--border);
+      opacity: 0;
+      transform: translateY(24px);
+      transition:
+        opacity 0.55s ease,
+        transform 0.55s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
+    }
+
+    .summary.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .summary.is-visible:hover {
+      transform: translateY(-6px);
+      border-color: var(--green);
+      box-shadow: 0 14px 32px rgba(37, 179, 75, 0.18);
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+    }
+
+    .summary-row + .summary-row {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .summary-item {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .summary-meta {
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .summary-price {
+      font-weight: 700;
+      color: var(--text);
+      font-size: 16px;
+      white-space: nowrap;
+    }
+
+    .summary-total-label {
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .summary-total-price {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    #payment-element {
+      margin: 4px 0 8px;
+      min-height: 40px;
+    }
+
+    .stripe-placeholder {
+      display: none;
+      background: var(--input-bg);
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      padding: 18px 16px;
+      margin: 4px 0 16px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.55;
+    }
+
+    .stripe-placeholder strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .error-banner,
+    .info-banner {
+      display: none;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .error-banner {
+      background: var(--error-bg);
+      border: 1px solid var(--error-border);
+      color: var(--error);
+    }
+
+    .info-banner {
+      background: var(--info-bg);
+      border: 1px solid var(--info-border);
+      color: var(--text);
+    }
+
+    .error-banner.visible,
+    .info-banner.visible { display: block; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      background: var(--green);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      padding: 16px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      margin-top: 8px;
+    }
+
+    .btn:hover { background: var(--green-dark); }
+    .btn:active { transform: scale(0.99); }
+    .btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .btn svg { flex-shrink: 0; }
+
+    .trust {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 16px;
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+
+    .trust svg { color: var(--green); }
+
+    .stripe-powered {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 400;
+      color: #8898aa;
+      letter-spacing: 0.01em;
+    }
+
+    .stripe-powered strong {
+      font-weight: 700;
+      color: #6772e5;
+      letter-spacing: -0.02em;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .stripe-powered {
+        color: #9aa5b5;
+      }
+      .stripe-powered strong {
+        color: #a0a8f0;
+      }
+    }
+
+    /* States overlay inside card */
+    .state { display: none; }
+    .state.active { display: block; }
+
+    .state-center { text-align: center; padding: 24px 8px; }
+
+    .spinner {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 3px solid var(--spinner-track);
+      border-top-color: var(--green);
+      animation: spin 0.9s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .status-icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 20px;
+    }
+
+    .complete-circle {
+      fill: rgba(37, 179, 75, 0.12);
+      stroke: var(--green);
+      stroke-width: 2;
+      stroke-dasharray: 151;
+      stroke-dashoffset: 151;
+    }
+
+    .complete-check {
+      fill: none;
+      stroke: var(--green);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 48;
+      stroke-dashoffset: 48;
+    }
+
+    .is-ready .complete-circle { animation: drawCircle 0.55s ease forwards; }
+    .is-ready .complete-check { animation: drawCheck 0.4s 0.45s ease forwards; }
+
+    @keyframes drawCircle { to { stroke-dashoffset: 0; } }
+    @keyframes drawCheck { to { stroke-dashoffset: 0; } }
+
+    .error-badge {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 2px solid var(--error);
+      background: var(--error-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin: 0 auto 20px;
+    }
+
+    .state-center h2 {
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .state-center p {
+      font-weight: 300;
+      font-size: 14px;
+      color: var(--muted);
+      max-width: 400px;
+      margin: 0 auto 16px;
+      line-height: 1.65;
+    }
+
+    .paid-amount {
+      font-weight: 600;
+      color: var(--green);
+      font-size: 16px;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      margin-top: 8px;
+    }
+
+    .btn-secondary:hover {
+      background: var(--input-bg);
+    }
+
+    /* Gallery */
+    .gallery {
+      margin-bottom: 40px;
+    }
+
+    .gallery-head {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .gallery-head h2 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .gallery-head p {
+      font-weight: 300;
+      font-size: 14px;
+      color: var(--muted);
+      max-width: 440px;
+      margin: 0 auto;
+      line-height: 1.65;
+    }
+
+    .gallery-panel {
+      background: transparent;
+      border-radius: 0;
+      padding: 0;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .gallery-grid { grid-template-columns: 1fr; }
+      .gallery-head h2 { font-size: 24px; }
+    }
+
+    .gallery-item {
+      background: var(--card-item-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: var(--card-item-shadow);
+      opacity: 0;
+      transform: translateY(28px);
+      transition:
+        opacity 0.55s ease,
+        transform 0.55s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
+    }
+
+    .gallery-item.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .gallery-item:nth-child(1) { transition-delay: 0s; }
+    .gallery-item:nth-child(2) { transition-delay: 0.12s; }
+    .gallery-item:nth-child(3) { transition-delay: 0.24s; }
+
+    .gallery-item.is-visible:nth-child(1) { transition-delay: 0.05s; }
+    .gallery-item.is-visible:nth-child(2) { transition-delay: 0.18s; }
+    .gallery-item.is-visible:nth-child(3) { transition-delay: 0.3s; }
+
+    .gallery-item:hover {
+      transform: translateY(-6px);
+      border-color: var(--green);
+      box-shadow: 0 14px 32px rgba(37, 179, 75, 0.18);
+    }
+
+    .gallery-item.is-visible:hover {
+      transform: translateY(-6px);
+    }
+
+    .gallery-media {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gallery-media::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 4px;
+      background: var(--green);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.35s ease;
+    }
+
+    .gallery-item:hover .gallery-media::after {
+      transform: scaleX(1);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      display: block;
+      background: var(--input-bg);
+      transition: transform 0.45s ease;
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.05);
+    }
+
+    .gallery-caption {
+      padding: 14px 14px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .gallery-caption span {
+      display: block;
+      font-weight: 300;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .gallery-item,
+      .gallery-item img,
+      .gallery-media::after,
+      .summary {
+        transition: none;
+      }
+      .gallery-item,
+      .summary {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding-top: 8px;
+    }
+
+    .footer-tagline {
+      font-size: 15px;
+      font-weight: 500;
+      font-style: italic;
+      color: var(--text);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .footer-contact {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--muted);
+    }
+
+    .footer-contact a {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer-contact a:hover {
+      color: var(--green);
+    }
+
+    .yellow-accent {
+      display: inline-block;
+      width: 40px;
+      height: 3px;
+      background: var(--yellow);
+      border-radius: 2px;
+      margin: 0 auto 16px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="header">
+    <div class="logo">
+      <img
+        class="logo-img"
+        src="assets/solve-logo.png"
+        alt="Solve Energy"
+      />
+    </div>
+    <p class="intro">
+      This deposit confirms your place in our installation pipeline and allows us to begin
+      the planning process to ensure a smooth, efficient install.
+    </p>
+  </header>
+
+  <main class="card">
+
+    <!-- Loading -->
+    <div id="state-loading" class="state state-center active">
+      <div class="spinner"></div>
+      <h2>Preparing secure checkout</h2>
+      <p>Setting up your Solve Energy deposit…</p>
+    </div>
+
+    <!-- Pay -->
+    <div id="state-pay" class="state">
+      <div class="eyebrow">Secure checkout</div>
+      <h1>Solar Installation Deposit</h1>
+      <p class="card-sub">Provide your information below to complete your project deposit.</p>
+
+      <div class="error-banner" id="pay-error"></div>
+      <div class="info-banner" id="pay-info"></div>
+
+      <div class="section-label">Your details</div>
+      <div class="field">
+        <label for="customer-name">Full name</label>
+        <input id="customer-name" type="text" autocomplete="name" placeholder="First and last name" />
+      </div>
+      <div class="fields-grid">
+        <div class="field">
+          <label for="customer-email">Email address</label>
+          <input id="customer-email" type="email" autocomplete="email" placeholder="you@example.com" required />
+        </div>
+        <div class="field">
+          <label for="customer-phone">Phone number</label>
+          <input id="customer-phone" type="tel" autocomplete="tel" placeholder="(555) 000-0000" />
+        </div>
+      </div>
+
+      <div class="summary">
+        <div class="summary-row">
+          <div class="summary-item" id="product-display">Total Deposit</div>
+          <div class="summary-price" id="amount-display">CA$1,031.00</div>
+        </div>
+      </div>
+
+      <div class="section-label">Payment</div>
+      <div id="payment-element"></div>
+      <div class="stripe-placeholder" id="stripe-placeholder">
+        <strong>Stripe card form will appear here</strong><br />
+        Add your Stripe secret key in Vercel to enable live payments.
+      </div>
+
+      <div class="field territory-field">
+        <label id="country-label" for="country-trigger">Country / Territory</label>
+        <div class="country-picker" id="country-picker">
+          <input type="hidden" id="customer-country" name="country" value="CA" autocomplete="country" />
+          <button
+            type="button"
+            class="country-trigger"
+            id="country-trigger"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            aria-labelledby="country-label country-trigger-name"
+          >
+            <span id="country-trigger-name">Canada</span>
+            <svg class="country-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+          <div class="country-panel" id="country-panel" hidden>
+            <div class="country-list" id="country-list" role="listbox" aria-labelledby="country-label"></div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn" id="submit-btn" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <rect x="3" y="11" width="18" height="11" rx="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+        <span id="submit-text">Complete Deposit</span>
+      </button>
+
+      <div class="trust">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+        <span>100% secure &amp; safe payments</span>
+      </div>
+      <p class="stripe-powered">Powered by <strong>stripe</strong></p>
+    </div>
+
+    <!-- Success -->
+    <div id="state-success" class="state state-center">
+      <div class="status-icon is-ready" id="success-visual">
+        <svg width="72" height="72" viewBox="0 0 52 52" aria-hidden="true">
+          <circle class="complete-circle" cx="26" cy="26" r="24" />
+          <path class="complete-check" d="M14 27 l8 8 l16-16" />
+        </svg>
+      </div>
+      <div class="eyebrow">Payment received</div>
+      <h2>Thank you</h2>
+      <p>
+        Your Solve Energy project deposit is confirmed. A receipt will be emailed to you shortly,
+        and our team will follow up to keep your install moving forward.
+      </p>
+      <p class="paid-amount" id="success-amount"></p>
+    </div>
+
+    <!-- Error -->
+    <div id="state-error" class="state state-center">
+      <div class="error-badge">⚠️</div>
+      <h2>Something went wrong</h2>
+      <p id="error-message">We couldn't start checkout. Please try again or contact us.</p>
+      <button class="btn btn-secondary" type="button" onclick="window.location.reload()">Try again</button>
+    </div>
+  </main>
+
+  <section class="gallery" aria-label="Solar installs">
+    <div class="gallery-head">
+      <div class="yellow-accent"></div>
+      <h2>See Our Solar Installs</h2>
+      <p>Join the movement in building a cleaner, brighter tomorrow. <strong>Powered by Solve Energy</strong></p>
+    </div>
+    <div class="gallery-panel">
+      <div class="gallery-grid">
+        <article class="gallery-item">
+          <div class="gallery-media">
+            <img src="assets/hero-premium-house.jpg" alt="Residential solar installation" />
+          </div>
+          <div class="gallery-caption">
+            Premium residential install
+            <span>Clean power for your home</span>
+          </div>
+        </article>
+        <article class="gallery-item">
+          <div class="gallery-media">
+            <img src="assets/hero-house.png" alt="Home with solar system" />
+          </div>
+          <div class="gallery-caption">
+            Whole-home solar
+            <span>Engineered for efficiency</span>
+          </div>
+        </article>
+        <article class="gallery-item">
+          <div class="gallery-media">
+            <img src="assets/install-victoria.png" alt="Solar installation in Victoria, BC" />
+          </div>
+          <div class="gallery-caption">
+            Location: Victoria, BC
+            <span><strong>System:</strong> 23.5 kW</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p class="footer-tagline">
+      Take the first step towards energy independence. Start saving with Solve.
+    </p>
+    <p class="footer-contact">
+      <a href="mailto:projects@solveenergy.ca">projects@solveenergy.ca</a>
+      &nbsp;·&nbsp;
+      <a href="tel:+18886676583">+1 888-667-6583</a>
+    </p>
+  </footer>
+
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const BASE = window.location.origin;
+
+  let stripe;
+  let elements;
+  let amountCents = 103100;
+  let activeCurrency = 'cad';
+  let checkoutReady = false;
+  const DEFAULT_PRODUCT = 'Total Deposit';
+
+  const COUNTRIES = [
+    { code: 'CA', name: 'Canada' },
+    { code: 'US', name: 'United States' },
+    { code: 'GB', name: 'United Kingdom' },
+    { code: 'AU', name: 'Australia' },
+    { code: 'NZ', name: 'New Zealand' },
+    { code: 'IE', name: 'Ireland' },
+    { code: 'DE', name: 'Germany' },
+    { code: 'FR', name: 'France' },
+    { code: 'NL', name: 'Netherlands' },
+    { code: 'MX', name: 'Mexico' },
+    { code: 'IN', name: 'India' },
+    { code: 'PH', name: 'Philippines' },
+    { code: 'SG', name: 'Singapore' },
+    { code: 'AE', name: 'United Arab Emirates' },
+    { code: 'ZA', name: 'South Africa' },
+  ];
+
+  function getCountryByCode(code) {
+    return COUNTRIES.find((c) => c.code === code) || COUNTRIES[0];
+  }
+
+  function renderCountryOptions() {
+    const selected = (document.getElementById('customer-country').value || 'CA').toUpperCase();
+    document.getElementById('country-list').innerHTML = COUNTRIES.map((c) => `
+      <button
+        type="button"
+        class="country-option${c.code === selected ? ' is-selected' : ''}"
+        role="option"
+        data-code="${c.code}"
+        aria-selected="${c.code === selected ? 'true' : 'false'}"
+      >
+        <span>${c.name}</span>
+        <svg class="country-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M5 13l4 4L19 7" />
+        </svg>
+      </button>
+    `).join('');
+  }
+
+  function setSelectedCountry(code) {
+    const country = getCountryByCode(code);
+    document.getElementById('customer-country').value = country.code;
+    document.getElementById('country-trigger-name').textContent = country.name;
+    renderCountryOptions();
+  }
+
+  function openCountryPicker() {
+    const picker = document.getElementById('country-picker');
+    const panel = document.getElementById('country-panel');
+    const trigger = document.getElementById('country-trigger');
+    picker.classList.add('is-open');
+    panel.hidden = false;
+    trigger.setAttribute('aria-expanded', 'true');
+    renderCountryOptions();
+  }
+
+  function closeCountryPicker() {
+    const picker = document.getElementById('country-picker');
+    const panel = document.getElementById('country-panel');
+    const trigger = document.getElementById('country-trigger');
+    picker.classList.remove('is-open');
+    panel.hidden = true;
+    trigger.setAttribute('aria-expanded', 'false');
+  }
+
+  function initCountryPicker() {
+    const picker = document.getElementById('country-picker');
+    const trigger = document.getElementById('country-trigger');
+    const list = document.getElementById('country-list');
+
+    setSelectedCountry('CA');
+
+    trigger.addEventListener('click', () => {
+      if (picker.classList.contains('is-open')) closeCountryPicker();
+      else openCountryPicker();
+    });
+
+    list.addEventListener('click', (e) => {
+      const option = e.target.closest('.country-option');
+      if (!option) return;
+      setSelectedCountry(option.dataset.code);
+      closeCountryPicker();
+      trigger.focus();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!picker.contains(e.target)) closeCountryPicker();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && picker.classList.contains('is-open')) {
+        closeCountryPicker();
+        trigger.focus();
+      }
+    });
+  }
+
+  function showState(name) {
+    ['state-loading', 'state-pay', 'state-success', 'state-error'].forEach((id) => {
+      document.getElementById(id).classList.toggle('active', id === `state-${name}`);
+    });
+  }
+
+  function formatMoney(cents, curr) {
+    try {
+      return new Intl.NumberFormat('en-CA', {
+        style: 'currency',
+        currency: (curr || 'CAD').toUpperCase(),
+      }).format(cents / 100);
+    } catch {
+      return `CA$${(cents / 100).toFixed(2)}`;
+    }
+  }
+
+  function decodeParam(value) {
+    if (!value) return '';
+    try {
+      return decodeURIComponent(value).trim();
+    } catch {
+      return String(value).trim();
+    }
+  }
+
+  function showPayError(message) {
+    const el = document.getElementById('pay-error');
+    el.textContent = message || 'Payment failed. Please try again.';
+    el.classList.add('visible');
+  }
+
+  function clearPayError() {
+    const el = document.getElementById('pay-error');
+    el.textContent = '';
+    el.classList.remove('visible');
+  }
+
+  function applyOrderSummary(cents, currency, productName) {
+    amountCents = cents;
+    activeCurrency = currency || 'cad';
+    const money = formatMoney(amountCents, activeCurrency);
+    document.getElementById('amount-display').textContent = money;
+    document.getElementById('product-display').textContent = productName || DEFAULT_PRODUCT;
+    document.getElementById('submit-text').textContent = `Complete Deposit · ${money}`;
+  }
+
+  function showBrandedPreview(message) {
+    applyOrderSummary(103100, 'cad', DEFAULT_PRODUCT);
+    document.getElementById('payment-element').style.display = 'none';
+    document.getElementById('stripe-placeholder').style.display = 'block';
+    const info = document.getElementById('pay-info');
+    info.textContent = message || 'Stripe secret key is not configured yet. Add it in Vercel to enable card payments.';
+    info.classList.add('visible');
+    document.getElementById('submit-btn').disabled = true;
+    showState('pay');
+  }
+
+  async function init() {
+    const redirectStatus = params.get('redirect_status');
+    if (params.get('payment_intent') && redirectStatus === 'succeeded') {
+      document.getElementById('success-amount').textContent = 'Your deposit was completed successfully.';
+      showState('success');
+      return;
+    }
+    if (params.get('payment_intent') && redirectStatus && redirectStatus !== 'succeeded') {
+      document.getElementById('error-message').textContent = 'Payment was not completed. Please try again.';
+      showState('error');
+      return;
+    }
+
+    const emailFromUrl = decodeParam(params.get('email') || params.get('contact_email'));
+    const nameFromUrl = decodeParam(params.get('name') || params.get('contact_name') || params.get('full_name'));
+    const phoneFromUrl = decodeParam(params.get('phone') || params.get('contact_phone'));
+    const jobId = decodeParam(params.get('job_id') || params.get('jobId'));
+    const description = decodeParam(params.get('description'));
+
+    if (emailFromUrl) document.getElementById('customer-email').value = emailFromUrl;
+    if (nameFromUrl) document.getElementById('customer-name').value = nameFromUrl;
+    if (phoneFromUrl) document.getElementById('customer-phone').value = phoneFromUrl;
+
+    try {
+      const configRes = await fetch(`${BASE}/api/payment-config`);
+      const config = await configRes.json();
+      if (!configRes.ok) {
+        showBrandedPreview(config.error || 'Stripe publishable key is not configured');
+        return;
+      }
+
+      applyOrderSummary(config.amountCents, config.currency, DEFAULT_PRODUCT);
+
+      const intentRes = await fetch(`${BASE}/api/create-payment-intent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: document.getElementById('customer-email').value,
+          name: document.getElementById('customer-name').value,
+          job_id: jobId,
+          description,
+        }),
+      });
+      const intent = await intentRes.json();
+      if (!intentRes.ok) {
+        showBrandedPreview(intent.error || 'Stripe secret key is not configured');
+        return;
+      }
+
+      stripe = Stripe(config.publishableKey);
+
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const appearance = isDark
+        ? {
+            theme: 'night',
+            variables: {
+              colorPrimary: '#25B34B',
+              colorBackground: '#1C2418',
+              colorText: '#E8ECE1',
+              colorDanger: '#F87171',
+              fontFamily: 'Inter, system-ui, sans-serif',
+              borderRadius: '10px',
+              spacingUnit: '4px',
+            },
+            rules: {
+              '.Input': {
+                backgroundColor: '#121710',
+                borderColor: '#3A4336',
+              },
+              '.Input:focus': {
+                borderColor: '#25B34B',
+                boxShadow: '0 0 0 3px rgba(37, 179, 75, 0.2)',
+              },
+              '.Label': {
+                color: '#B9C0B2',
+                fontWeight: '500',
+              },
+            },
+          }
+        : {
+            theme: 'stripe',
+            variables: {
+              colorPrimary: '#25B34B',
+              colorBackground: '#FFFFFF',
+              colorText: '#1C2418',
+              colorDanger: '#C0392B',
+              fontFamily: 'Inter, system-ui, sans-serif',
+              borderRadius: '10px',
+              spacingUnit: '4px',
+            },
+            rules: {
+              '.Input': {
+                backgroundColor: '#E8ECE1',
+                borderColor: '#D5D9CF',
+              },
+              '.Input:focus': {
+                borderColor: '#25B34B',
+                boxShadow: '0 0 0 3px rgba(37, 179, 75, 0.15)',
+              },
+              '.Label': {
+                color: '#5A6455',
+                fontWeight: '500',
+              },
+            },
+          };
+
+      elements = stripe.elements({
+        clientSecret: intent.clientSecret,
+        appearance,
+      });
+
+      document.getElementById('stripe-placeholder').style.display = 'none';
+      document.getElementById('payment-element').style.display = 'block';
+
+      // Collect name/email/phone on our form. Stripe only accepts
+      // fields.billingDetails as the string 'never' or 'auto'.
+      const paymentElement = elements.create('payment', {
+        layout: 'tabs',
+        fields: {
+          billingDetails: 'never',
+        },
+      });
+      paymentElement.mount('#payment-element');
+      checkoutReady = true;
+      document.getElementById('submit-btn').disabled = false;
+      showState('pay');
+    } catch (e) {
+      console.error(e);
+      showBrandedPreview(e.message || 'Unable to start Stripe checkout yet.');
+    }
+  }
+
+  document.getElementById('submit-btn').addEventListener('click', async () => {
+    clearPayError();
+    if (!checkoutReady || !stripe || !elements) {
+      showPayError('Stripe is not ready yet. Add your secret key in Vercel, then refresh.');
+      return;
+    }
+
+    const email = document.getElementById('customer-email').value.trim();
+    const name = document.getElementById('customer-name').value.trim();
+    const phone = document.getElementById('customer-phone').value.trim();
+    const country = (document.getElementById('customer-country').value || 'CA').toUpperCase();
+
+    if (!name) {
+      showPayError('Please enter your full name.');
+      return;
+    }
+    if (!email || !email.includes('@')) {
+      showPayError('Please enter a valid email address.');
+      return;
+    }
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    document.getElementById('submit-text').textContent = 'Processing…';
+
+    const { error, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/solve_energy_payment_link.html`,
+        receipt_email: email,
+        payment_method_data: {
+          billing_details: {
+            email,
+            name,
+            phone: phone || undefined,
+            address: {
+              country,
+            },
+          },
+        },
+      },
+      redirect: 'if_required',
+    });
+
+    if (error) {
+      showPayError(error.message);
+      btn.disabled = false;
+      document.getElementById('submit-text').textContent = `Complete Deposit · ${formatMoney(amountCents, activeCurrency)}`;
+      return;
+    }
+
+    if (paymentIntent && (paymentIntent.status === 'succeeded' || paymentIntent.status === 'processing')) {
+      document.getElementById('success-amount').textContent = `Paid ${formatMoney(amountCents, activeCurrency)}`;
+      showState('success');
+      return;
+    }
+
+    document.getElementById('success-amount').textContent = 'Your payment is being confirmed…';
+    showState('success');
+  });
+
+  initCountryPicker();
+  init();
+
+  // Animate summary stripe + install cards when they enter the viewport
+  const animatedItems = document.querySelectorAll('.summary, .gallery-item');
+  if ('IntersectionObserver' in window && animatedItems.length) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.2, rootMargin: '0px 0px -40px 0px' }
+    );
+    animatedItems.forEach((item) => observer.observe(item));
+  } else {
+    animatedItems.forEach((item) => item.classList.add('is-visible'));
+  }
+</script>
+</body>
+</html>
