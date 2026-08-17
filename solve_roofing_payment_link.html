@@ -12,7 +12,7 @@
 
     :root {
       --core: #1C2418;
-      --concrete: #E8ECE1;
+      --concrete: #F3E6E0;
       --sky: #B9DAE7;
       --green: #9B4A2D;
       --green-dark: #7E3C24;
@@ -26,17 +26,17 @@
       --surface: var(--white);
       --text: var(--core);
       --muted: #594D44;
-      --border: #D5D9CF;
-      --input-bg: var(--concrete);
+      --border: #E4D4CC;
+      --input-bg: #F7EFEA;
       --input-focus-bg: var(--white);
       --placeholder: #8A7D73;
-      --card-shadow: 0 8px 30px rgba(28, 36, 24, 0.08);
+      --card-shadow: 0 8px 30px rgba(155, 74, 45, 0.08);
       --gallery-panel: transparent;
       --card-item-bg: var(--white);
-      --card-item-shadow: 0 6px 20px rgba(28, 36, 24, 0.08);
+      --card-item-shadow: 0 6px 20px rgba(155, 74, 45, 0.08);
       --logo-filter: brightness(0) saturate(100%);
-      --info-bg: rgba(185, 218, 231, 0.45);
-      --info-border: rgba(185, 218, 231, 0.9);
+      --info-bg: rgba(155, 74, 45, 0.10);
+      --info-border: rgba(155, 74, 45, 0.28);
       --error-bg: rgba(192, 57, 43, 0.08);
       --error-border: rgba(192, 57, 43, 0.25);
       --spinner-track: var(--border);
@@ -45,24 +45,24 @@
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #121710;
-        --surface: #1C2418;
-        --text: #E8ECE1;
+        --bg: #1A1412;
+        --surface: #241C18;
+        --text: #F3E6E0;
         --muted: #C4B6AC;
-        --border: #3A4336;
-        --input-bg: #121710;
-        --input-focus-bg: #252D20;
+        --border: #3D322C;
+        --input-bg: #1A1412;
+        --input-focus-bg: #2C221C;
         --placeholder: #8A7D73;
         --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
         --gallery-panel: transparent;
-        --card-item-bg: #1C2418;
+        --card-item-bg: #241C18;
         --card-item-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
         --logo-filter: brightness(0) invert(1);
-        --info-bg: rgba(185, 218, 231, 0.12);
-        --info-border: rgba(185, 218, 231, 0.28);
+        --info-bg: rgba(155, 74, 45, 0.16);
+        --info-border: rgba(155, 74, 45, 0.35);
         --error-bg: rgba(239, 68, 68, 0.12);
         --error-border: rgba(239, 68, 68, 0.35);
-        --spinner-track: #3A4336;
+        --spinner-track: #3D322C;
         --error: #F87171;
         color-scheme: dark;
       }
@@ -83,7 +83,7 @@
       width: 100%;
       max-width: 720px;
       margin: 0 auto;
-      padding: 40px 20px 64px;
+      padding: 20px 20px 64px;
     }
 
     /* Header */
@@ -127,7 +127,7 @@
     }
 
     @media (max-width: 560px) {
-      .page { padding: 28px 14px 48px; }
+      .page { padding: 8px 14px 48px; }
       .card { padding: 28px 18px; border-radius: 14px; }
     }
 
