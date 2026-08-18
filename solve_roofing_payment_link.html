@@ -198,22 +198,6 @@
 
     .field input::placeholder { color: var(--placeholder); }
 
-    .address-hint {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 6px;
-      font-weight: 300;
-    }
-
-    .pac-container {
-      z-index: 10000;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      font-family: Inter, Arial, Helvetica, sans-serif;
-      box-shadow: 0 10px 28px rgba(155, 74, 45, 0.14);
-      margin-top: 4px;
-    }
-
     .territory-field {
       margin-top: 14px;
       margin-bottom: 4px;
@@ -876,10 +860,23 @@
           <input id="customer-phone" type="tel" autocomplete="tel" placeholder="(555) 000-0000" />
         </div>
       </div>
-      <div class="field" id="address-field">
+      <div class="field">
         <label for="customer-address">Street Address</label>
-        <input id="customer-address" type="text" autocomplete="off" placeholder="Start typing your address" />
-        <p class="address-hint" id="address-hint">Select an address from the suggestions so city, province, and postal code are filled automatically.</p>
+        <input id="customer-address" type="text" autocomplete="street-address" placeholder="Street address" />
+      </div>
+      <div class="fields-grid">
+        <div class="field">
+          <label for="customer-city">City</label>
+          <input id="customer-city" type="text" autocomplete="address-level2" placeholder="City" />
+        </div>
+        <div class="field">
+          <label for="customer-state">Province / State</label>
+          <input id="customer-state" type="text" autocomplete="address-level1" placeholder="Province / State" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="customer-postal">Postal / ZIP code</label>
+        <input id="customer-postal" type="text" autocomplete="postal-code" placeholder="Postal / ZIP code" />
       </div>
 
       <div class="summary">
@@ -894,6 +891,29 @@
       <div class="stripe-placeholder" id="stripe-placeholder">
         <strong>Stripe card form will appear here</strong><br />
         Add your Roofing Stripe keys in Vercel to enable live payments.
+      </div>
+
+      <div class="field territory-field">
+        <label id="country-label" for="country-trigger">Country / Territory</label>
+        <div class="country-picker" id="country-picker">
+          <input type="hidden" id="customer-country" name="country" value="CA" autocomplete="country" />
+          <button
+            type="button"
+            class="country-trigger"
+            id="country-trigger"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            aria-labelledby="country-label country-trigger-name"
+          >
+            <span id="country-trigger-name">Canada</span>
+            <svg class="country-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+          <div class="country-panel" id="country-panel" hidden>
+            <div class="country-list" id="country-list" role="listbox" aria-labelledby="country-label"></div>
+          </div>
+        </div>
       </div>
 
       <button class="btn" id="submit-btn" type="button">
@@ -1000,80 +1020,7 @@
   let amountCents = 0;
   let activeCurrency = 'cad';
   let checkoutReady = false;
-  let parsedAddress = null;
-  let useGooglePlaces = false;
   const DEFAULT_PRODUCT = 'Total Deposit';
-
-  function loadGooglePlaces(apiKey) {
-    return new Promise((resolve, reject) => {
-      if (window.google && window.google.maps && window.google.maps.places) {
-        resolve();
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Google Maps failed to load'));
-      document.head.appendChild(script);
-    });
-  }
-
-  function placeComponent(place, type, shortName) {
-    const match = (place.address_components || []).find((part) => part.types.includes(type));
-    if (!match) return '';
-    return shortName ? match.short_name : match.long_name;
-  }
-
-  function parseGooglePlace(place) {
-    const line1 = [placeComponent(place, 'street_number'), placeComponent(place, 'route')]
-      .filter(Boolean)
-      .join(' ');
-    return {
-      line1: line1 || (place.formatted_address || '').split(',')[0] || '',
-      city: placeComponent(place, 'locality')
-        || placeComponent(place, 'postal_town')
-        || placeComponent(place, 'sublocality_level_1')
-        || placeComponent(place, 'administrative_area_level_2'),
-      state: placeComponent(place, 'administrative_area_level_1', true),
-      postal: placeComponent(place, 'postal_code'),
-      country: (placeComponent(place, 'country', true) || 'CA').toUpperCase(),
-      formatted: place.formatted_address || line1,
-    };
-  }
-
-  async function initAddressAutocomplete(apiKey) {
-    const field = document.getElementById('address-field');
-    const hint = document.getElementById('address-hint');
-    if (!apiKey) {
-      useGooglePlaces = false;
-      if (field) field.style.display = 'none';
-      return;
-    }
-    useGooglePlaces = true;
-    await loadGooglePlaces(apiKey);
-    const input = document.getElementById('customer-address');
-    const autocomplete = new google.maps.places.Autocomplete(input, {
-      types: ['address'],
-      fields: ['address_components', 'formatted_address'],
-      componentRestrictions: { country: ['ca', 'us'] },
-    });
-    autocomplete.addListener('place_changed', () => {
-      parsedAddress = parseGooglePlace(autocomplete.getPlace());
-      if (hint) {
-        hint.textContent = [parsedAddress.city, parsedAddress.state, parsedAddress.postal]
-          .filter(Boolean)
-          .join(', ') || 'Address selected.';
-      }
-    });
-    input.addEventListener('input', () => {
-      parsedAddress = null;
-      if (hint) {
-        hint.textContent = 'Select an address from the suggestions so city, province, and postal code are filled automatically.';
-      }
-    });
-  }
 
   const COUNTRIES = [
     { code: 'CA', name: 'Canada' },
@@ -1247,12 +1194,20 @@
     const emailFromUrl = decodeParam(params.get('email') || params.get('contact_email'));
     const nameFromUrl = decodeParam(params.get('name') || params.get('contact_name') || params.get('full_name'));
     const phoneFromUrl = decodeParam(params.get('phone') || params.get('contact_phone'));
+    const addressFromUrl = decodeParam(params.get('address') || params.get('street') || params.get('street_address'));
+    const cityFromUrl = decodeParam(params.get('city'));
+    const stateFromUrl = decodeParam(params.get('state') || params.get('province'));
+    const postalFromUrl = decodeParam(params.get('postal') || params.get('postal_code') || params.get('zip'));
     const jobId = decodeParam(params.get('job_id') || params.get('jobId'));
     const description = decodeParam(params.get('description'));
 
     if (emailFromUrl) document.getElementById('customer-email').value = emailFromUrl;
     if (nameFromUrl) document.getElementById('customer-name').value = nameFromUrl;
     if (phoneFromUrl) document.getElementById('customer-phone').value = phoneFromUrl;
+    if (addressFromUrl) document.getElementById('customer-address').value = addressFromUrl;
+    if (cityFromUrl) document.getElementById('customer-city').value = cityFromUrl;
+    if (stateFromUrl) document.getElementById('customer-state').value = stateFromUrl;
+    if (postalFromUrl) document.getElementById('customer-postal').value = postalFromUrl;
 
     try {
       const configRes = await fetch(`${BASE}/api/roofing-payment-config`);
@@ -1263,14 +1218,6 @@
       }
 
       applyOrderSummary(config.amountCents, config.currency, DEFAULT_PRODUCT);
-      try {
-        await initAddressAutocomplete(config.googleMapsApiKey);
-      } catch (e) {
-        console.error(e);
-        useGooglePlaces = false;
-        const field = document.getElementById('address-field');
-        if (field) field.style.display = 'none';
-      }
 
       const intentRes = await fetch(`${BASE}/api/roofing-create-payment-intent`, {
         method: 'POST',
@@ -1358,17 +1305,7 @@
       const paymentElement = elements.create('payment', {
         layout: 'tabs',
         fields: {
-          billingDetails: {
-            name: 'never',
-            email: 'never',
-            phone: 'never',
-            address: useGooglePlaces ? 'never' : 'auto',
-          },
-        },
-        wallets: {
-          applePay: 'never',
-          googlePay: 'never',
-          link: 'never',
+          billingDetails: 'never',
         },
       });
       paymentElement.mount('#payment-element');
@@ -1391,6 +1328,11 @@
     const email = document.getElementById('customer-email').value.trim();
     const name = document.getElementById('customer-name').value.trim();
     const phone = document.getElementById('customer-phone').value.trim();
+    const address = document.getElementById('customer-address').value.trim();
+    const city = document.getElementById('customer-city').value.trim();
+    const state = document.getElementById('customer-state').value.trim();
+    const postal = document.getElementById('customer-postal').value.trim();
+    const country = (document.getElementById('customer-country').value || 'CA').toUpperCase();
 
     if (!name) {
       showPayError('Please enter your full name.');
@@ -1400,8 +1342,20 @@
       showPayError('Please enter a valid email address.');
       return;
     }
-    if (useGooglePlaces && (!parsedAddress || !parsedAddress.line1 || !parsedAddress.city || !parsedAddress.state || !parsedAddress.postal)) {
-      showPayError('Please choose an address from the Google suggestions.');
+    if (!address) {
+      showPayError('Please enter your street address.');
+      return;
+    }
+    if (!city) {
+      showPayError('Please enter your city.');
+      return;
+    }
+    if (!state) {
+      showPayError('Please enter your province / state.');
+      return;
+    }
+    if (!postal) {
+      showPayError('Please enter your postal / ZIP code.');
       return;
     }
 
@@ -1419,15 +1373,13 @@
             email,
             name,
             phone: phone || undefined,
-            ...(useGooglePlaces && parsedAddress ? {
-              address: {
-                line1: parsedAddress.line1,
-                city: parsedAddress.city,
-                state: parsedAddress.state,
-                postal_code: parsedAddress.postal,
-                country: parsedAddress.country,
-              },
-            } : {}),
+            address: {
+              line1: address,
+              city,
+              state,
+              postal_code: postal,
+              country,
+            },
           },
         },
       },
@@ -1451,6 +1403,7 @@
     showState('success');
   });
 
+  initCountryPicker();
   init();
 
   // Animate summary stripe + install cards when they enter the viewport

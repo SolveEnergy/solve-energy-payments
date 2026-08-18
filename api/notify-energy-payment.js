@@ -1,13 +1,3 @@
-import Stripe from 'stripe';
-
-function formatAddress(addr) {
-  if (!addr) return '';
-  return [addr.line1, addr.line2, addr.city, addr.state, addr.postal_code, addr.country]
-    .map((part) => (typeof part === 'string' ? part.trim() : ''))
-    .filter(Boolean)
-    .join(', ');
-}
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -28,38 +18,14 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Successful payment_id is required' });
   }
 
-  let address = typeof body.address === 'string' ? body.address.trim() : '';
-  let city = typeof body.city === 'string' ? body.city.trim() : '';
-  let state = typeof body.state === 'string' ? body.state.trim() : '';
-  let postalCode = typeof body.postal_code === 'string' ? body.postal_code.trim() : '';
-
-  const secretKey = process.env.STRIPE_SECRET_KEY;
-  if (secretKey) {
-    try {
-      const stripe = new Stripe(secretKey);
-      const paymentIntent = await stripe.paymentIntents.retrieve(paymentId, {
-        expand: ['payment_method'],
-      });
-      const billingAddress = paymentIntent?.payment_method?.billing_details?.address;
-      if (billingAddress) {
-        address = formatAddress(billingAddress) || address;
-        city = billingAddress.city || city;
-        state = billingAddress.state || state;
-        postalCode = billingAddress.postal_code || postalCode;
-      }
-    } catch (e) {
-      console.error('Failed to load Stripe billing address:', e);
-    }
-  }
-
   const payload = {
     name: typeof body.name === 'string' ? body.name.trim() : '',
     email: typeof body.email === 'string' ? body.email.trim() : '',
     phone: typeof body.phone === 'string' ? body.phone.trim() : '',
-    address,
-    city,
-    state,
-    postal_code: postalCode,
+    address: typeof body.address === 'string' ? body.address.trim() : '',
+    city: typeof body.city === 'string' ? body.city.trim() : '',
+    state: typeof body.state === 'string' ? body.state.trim() : '',
+    postal_code: typeof body.postal_code === 'string' ? body.postal_code.trim() : '',
     amount: 1031,
     currency: 'cad',
     division: 'solar',
