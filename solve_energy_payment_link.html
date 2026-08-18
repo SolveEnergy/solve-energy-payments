@@ -198,22 +198,6 @@
 
     .field input::placeholder { color: var(--placeholder); }
 
-    .address-hint {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 6px;
-      font-weight: 300;
-    }
-
-    .pac-container {
-      z-index: 10000;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      font-family: Inter, Arial, Helvetica, sans-serif;
-      box-shadow: 0 10px 28px rgba(28, 36, 24, 0.14);
-      margin-top: 4px;
-    }
-
     .territory-field {
       margin-top: 14px;
       margin-bottom: 4px;
@@ -878,8 +862,7 @@
       </div>
       <div class="field">
         <label for="customer-address">Street Address</label>
-        <input id="customer-address" type="text" autocomplete="off" placeholder="Start typing your address" />
-        <p class="address-hint">Select a suggestion to auto-fill city, province, and postal code.</p>
+        <input id="customer-address" type="text" autocomplete="street-address" placeholder="Street address" />
       </div>
       <div class="fields-grid">
         <div class="field">
@@ -1038,67 +1021,6 @@
   let activeCurrency = 'cad';
   let checkoutReady = false;
   const DEFAULT_PRODUCT = 'Total Deposit';
-
-  function loadGooglePlaces(apiKey) {
-    return new Promise((resolve, reject) => {
-      if (window.google && window.google.maps && window.google.maps.places) {
-        resolve();
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Google Maps failed to load'));
-      document.head.appendChild(script);
-    });
-  }
-
-  function placeComponent(place, type, shortName) {
-    const match = (place.address_components || []).find((part) => part.types.includes(type));
-    if (!match) return '';
-    return shortName ? match.short_name : match.long_name;
-  }
-
-  function fillAddressFromPlace(place) {
-    const streetNumber = placeComponent(place, 'street_number');
-    const route = placeComponent(place, 'route');
-    const line1 = [streetNumber, route].filter(Boolean).join(' ');
-    const city = placeComponent(place, 'locality')
-      || placeComponent(place, 'postal_town')
-      || placeComponent(place, 'sublocality_level_1')
-      || placeComponent(place, 'administrative_area_level_2');
-    const state = placeComponent(place, 'administrative_area_level_1', true);
-    const postal = placeComponent(place, 'postal_code');
-    const country = (placeComponent(place, 'country', true) || '').toUpperCase();
-
-    const addressEl = document.getElementById('customer-address');
-    const cityEl = document.getElementById('customer-city');
-    const stateEl = document.getElementById('customer-state');
-    const postalEl = document.getElementById('customer-postal');
-
-    if (addressEl && line1) addressEl.value = line1;
-    if (cityEl && city) cityEl.value = city;
-    if (stateEl && state) stateEl.value = state;
-    if (postalEl && postal) postalEl.value = postal;
-    if (country && typeof setSelectedCountry === 'function') setSelectedCountry(country);
-  }
-
-  async function initAddressAutocomplete(apiKey) {
-    if (!apiKey) return;
-    await loadGooglePlaces(apiKey);
-    const input = document.getElementById('customer-address');
-    if (!input || !window.google?.maps?.places) return;
-    const autocomplete = new google.maps.places.Autocomplete(input, {
-      types: ['address'],
-      fields: ['address_components', 'formatted_address'],
-      componentRestrictions: { country: ['ca', 'us'] },
-    });
-    autocomplete.addListener('place_changed', () => {
-      fillAddressFromPlace(autocomplete.getPlace());
-    });
-  }
 
   const COUNTRIES = [
     { code: 'CA', name: 'Canada' },
@@ -1345,11 +1267,6 @@
       }
 
       applyOrderSummary(config.amountCents, config.currency, DEFAULT_PRODUCT);
-      try {
-        await initAddressAutocomplete(config.googleMapsApiKey);
-      } catch (e) {
-        console.error('Google Places autocomplete failed to load:', e);
-      }
 
       const intentRes = await fetch(`${BASE}/api/create-payment-intent`, {
         method: 'POST',
