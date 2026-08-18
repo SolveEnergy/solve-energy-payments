@@ -864,6 +864,16 @@
         <label for="customer-address">Street Address</label>
         <input id="customer-address" type="text" autocomplete="street-address" placeholder="Street address" />
       </div>
+      <div class="fields-grid">
+        <div class="field">
+          <label for="customer-city">City</label>
+          <input id="customer-city" type="text" autocomplete="address-level2" placeholder="City" />
+        </div>
+        <div class="field">
+          <label for="customer-state">Province / State</label>
+          <input id="customer-state" type="text" autocomplete="address-level1" placeholder="Province / State" />
+        </div>
+      </div>
       <div class="field">
         <label for="customer-postal">Postal / ZIP code</label>
         <input id="customer-postal" type="text" autocomplete="postal-code" placeholder="Postal / ZIP code" />
@@ -1185,6 +1195,8 @@
     const nameFromUrl = decodeParam(params.get('name') || params.get('contact_name') || params.get('full_name'));
     const phoneFromUrl = decodeParam(params.get('phone') || params.get('contact_phone'));
     const addressFromUrl = decodeParam(params.get('address') || params.get('street') || params.get('street_address'));
+    const cityFromUrl = decodeParam(params.get('city'));
+    const stateFromUrl = decodeParam(params.get('state') || params.get('province'));
     const postalFromUrl = decodeParam(params.get('postal') || params.get('postal_code') || params.get('zip'));
     const jobId = decodeParam(params.get('job_id') || params.get('jobId'));
     const description = decodeParam(params.get('description'));
@@ -1193,6 +1205,8 @@
     if (nameFromUrl) document.getElementById('customer-name').value = nameFromUrl;
     if (phoneFromUrl) document.getElementById('customer-phone').value = phoneFromUrl;
     if (addressFromUrl) document.getElementById('customer-address').value = addressFromUrl;
+    if (cityFromUrl) document.getElementById('customer-city').value = cityFromUrl;
+    if (stateFromUrl) document.getElementById('customer-state').value = stateFromUrl;
     if (postalFromUrl) document.getElementById('customer-postal').value = postalFromUrl;
 
     try {
@@ -1315,6 +1329,8 @@
     const name = document.getElementById('customer-name').value.trim();
     const phone = document.getElementById('customer-phone').value.trim();
     const address = document.getElementById('customer-address').value.trim();
+    const city = document.getElementById('customer-city').value.trim();
+    const state = document.getElementById('customer-state').value.trim();
     const postal = document.getElementById('customer-postal').value.trim();
     const country = (document.getElementById('customer-country').value || 'CA').toUpperCase();
 
@@ -1328,6 +1344,14 @@
     }
     if (!address) {
       showPayError('Please enter your street address.');
+      return;
+    }
+    if (!city) {
+      showPayError('Please enter your city.');
+      return;
+    }
+    if (!state) {
+      showPayError('Please enter your province / state.');
       return;
     }
     if (!postal) {
@@ -1351,6 +1375,8 @@
             phone: phone || undefined,
             address: {
               line1: address,
+              city,
+              state,
               postal_code: postal,
               country,
             },

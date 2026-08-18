@@ -23,6 +23,8 @@ export default async function handler(req, res) {
     email: typeof body.email === 'string' ? body.email.trim() : '',
     phone: typeof body.phone === 'string' ? body.phone.trim() : '',
     address: typeof body.address === 'string' ? body.address.trim() : '',
+    city: typeof body.city === 'string' ? body.city.trim() : '',
+    state: typeof body.state === 'string' ? body.state.trim() : '',
     postal_code: typeof body.postal_code === 'string' ? body.postal_code.trim() : '',
     amount: 1031,
     currency: 'cad',
