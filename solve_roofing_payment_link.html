@@ -879,7 +879,7 @@
       <div class="summary">
         <div class="summary-row">
           <div class="summary-item" id="product-display">Total Deposit</div>
-          <div class="summary-price" id="amount-display">—</div>
+          <div class="summary-price" id="amount-display">CA$1,031.00</div>
         </div>
       </div>
 
@@ -985,7 +985,7 @@
             <img src="assets/roof-card-3.png" alt="Roofing project on Bewdley Avenue" />
           </div>
           <div class="gallery-caption">
-            Location: <strong>Bewdley Avenue</strong>
+            Location: <strong>Bewdley Avenue, BC</strong>
           </div>
         </article>
       </div>
@@ -1011,7 +1011,7 @@
 
   let stripe;
   let elements;
-  let amountCents = 0;
+  let amountCents = 103100;
   let activeCurrency = 'cad';
   let checkoutReady = false;
   const DEFAULT_PRODUCT = 'Total Deposit';
@@ -1193,7 +1193,7 @@
           city: data.city || '',
           state: data.state || '',
           postal_code: data.postal || '',
-          amount: Number.isFinite(amountCents) ? Math.round(amountCents) / 100 : 1000,
+          amount: Number.isFinite(amountCents) ? Math.round(amountCents) / 100 : 1031,
           currency: 'cad',
           division: 'roofing',
           payment_id: paymentId,
@@ -1208,7 +1208,7 @@
   }
 
   function showBrandedPreview(message) {
-    applyOrderSummary(0, 'cad', DEFAULT_PRODUCT);
+    applyOrderSummary(103100, 'cad', DEFAULT_PRODUCT);
     document.getElementById('payment-element').style.display = 'none';
     document.getElementById('stripe-placeholder').style.display = 'block';
     const info = document.getElementById('pay-info');

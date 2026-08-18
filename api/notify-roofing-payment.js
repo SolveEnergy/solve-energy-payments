@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Successful payment_id is required' });
   }
 
-  const amount = Number.isFinite(Number(body.amount)) ? Number(body.amount) : 1000;
+  const amount = Number.isFinite(Number(body.amount)) ? Number(body.amount) : 1031;
 
   const payload = {
     name: typeof body.name === 'string' ? body.name.trim() : '',
