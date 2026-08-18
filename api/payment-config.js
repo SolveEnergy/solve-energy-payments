@@ -59,5 +59,6 @@ export default async function handler(req, res) {
     productName,
     productId,
     priceId: priceId || null,
+    googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
   });
 }
