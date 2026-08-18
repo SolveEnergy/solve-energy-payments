@@ -1330,6 +1330,11 @@
         fields: {
           billingDetails: 'never',
         },
+        wallets: {
+          applePay: 'never',
+          googlePay: 'never',
+          link: 'never',
+        },
       });
       paymentElement.mount('#payment-element');
       checkoutReady = true;
@@ -1374,45 +1379,61 @@
     btn.disabled = true;
     document.getElementById('submit-text').textContent = 'Processing…';
 
-    const { error, paymentIntent } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/solve_energy_payment_link.html`,
-        receipt_email: email,
-        payment_method_data: {
-          billing_details: {
-            email,
-            name,
-            phone: phone || undefined,
-            address: {
-              line1: address,
-              country,
+    const resetPayButton = () => {
+      btn.disabled = false;
+      document.getElementById('submit-text').textContent = `Complete Deposit · ${formatMoney(amountCents, activeCurrency)}`;
+    };
+
+    try {
+      const { error: submitError } = await elements.submit();
+      if (submitError) {
+        showPayError(submitError.message);
+        resetPayButton();
+        return;
+      }
+
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/solve_energy_payment_link.html`,
+          receipt_email: email,
+          payment_method_data: {
+            billing_details: {
+              email,
+              name,
+              phone: phone || undefined,
+              address: {
+                line1: address,
+                country,
+              },
             },
           },
         },
-      },
-      redirect: 'if_required',
-    });
+        redirect: 'if_required',
+      });
 
-    if (error) {
-      showPayError(error.message);
-      btn.disabled = false;
-      document.getElementById('submit-text').textContent = `Complete Deposit · ${formatMoney(amountCents, activeCurrency)}`;
-      return;
-    }
-
-    if (paymentIntent && (paymentIntent.status === 'succeeded' || paymentIntent.status === 'processing')) {
-      document.getElementById('success-amount').textContent = `Paid ${formatMoney(amountCents, activeCurrency)}`;
-      showState('success');
-      if (paymentIntent.status === 'succeeded') {
-        notifyEnergyPaymentSuccess(paymentIntent.id, formData);
+      if (error) {
+        showPayError(error.message);
+        resetPayButton();
+        return;
       }
-      return;
-    }
 
-    document.getElementById('success-amount').textContent = 'Your payment is being confirmed…';
-    showState('success');
-  });
+      if (paymentIntent && (paymentIntent.status === 'succeeded' || paymentIntent.status === 'processing')) {
+        document.getElementById('success-amount').textContent = `Paid ${formatMoney(amountCents, activeCurrency)}`;
+        showState('success');
+        if (paymentIntent.status === 'succeeded') {
+          notifyEnergyPaymentSuccess(paymentIntent.id, formData);
+        }
+        return;
+      }
+
+      document.getElementById('success-amount').textContent = 'Your payment is being confirmed…';
+      showState('success');
+    } catch (e) {
+      console.error(e);
+      showPayError(e.message || 'Payment could not be completed. Please try again.');
+      resetPayButton();
+    }
 
   initCountryPicker();
   init();
