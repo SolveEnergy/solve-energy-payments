@@ -34,6 +34,7 @@ export default async function handler(req, res) {
       productName: catalog.productName,
       productId: catalog.productId,
       priceId: catalog.priceId,
+      googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
     });
   } catch (e) {
     console.error('Failed to load Roofing Stripe price for config:', e);
