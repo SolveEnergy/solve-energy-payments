@@ -1,3 +1,15 @@
 {
-  "version": 2
+  "version": 2,
+  "redirects": [
+    {
+      "source": "/solve_energy_payment_link.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/payment.html",
+      "destination": "/",
+      "permanent": true
+    }
+  ]
 }
