@@ -860,6 +860,10 @@
           <input id="customer-phone" type="tel" autocomplete="tel" placeholder="(555) 000-0000" />
         </div>
       </div>
+      <div class="field">
+        <label for="customer-address">Street Address</label>
+        <input id="customer-address" type="text" autocomplete="street-address" placeholder="Street address" />
+      </div>
 
       <div class="summary">
         <div class="summary-row">
@@ -1176,12 +1180,14 @@
     const emailFromUrl = decodeParam(params.get('email') || params.get('contact_email'));
     const nameFromUrl = decodeParam(params.get('name') || params.get('contact_name') || params.get('full_name'));
     const phoneFromUrl = decodeParam(params.get('phone') || params.get('contact_phone'));
+    const addressFromUrl = decodeParam(params.get('address') || params.get('street') || params.get('street_address'));
     const jobId = decodeParam(params.get('job_id') || params.get('jobId'));
     const description = decodeParam(params.get('description'));
 
     if (emailFromUrl) document.getElementById('customer-email').value = emailFromUrl;
     if (nameFromUrl) document.getElementById('customer-name').value = nameFromUrl;
     if (phoneFromUrl) document.getElementById('customer-phone').value = phoneFromUrl;
+    if (addressFromUrl) document.getElementById('customer-address').value = addressFromUrl;
 
     try {
       const configRes = await fetch(`${BASE}/api/roofing-payment-config`);
@@ -1302,6 +1308,7 @@
     const email = document.getElementById('customer-email').value.trim();
     const name = document.getElementById('customer-name').value.trim();
     const phone = document.getElementById('customer-phone').value.trim();
+    const address = document.getElementById('customer-address').value.trim();
     const country = (document.getElementById('customer-country').value || 'CA').toUpperCase();
 
     if (!name) {
@@ -1310,6 +1317,10 @@
     }
     if (!email || !email.includes('@')) {
       showPayError('Please enter a valid email address.');
+      return;
+    }
+    if (!address) {
+      showPayError('Please enter your street address.');
       return;
     }
 
@@ -1328,6 +1339,7 @@
             name,
             phone: phone || undefined,
             address: {
+              line1: address,
               country,
             },
           },
