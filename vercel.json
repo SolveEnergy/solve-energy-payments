@@ -1,5 +1,11 @@
 {
   "version": 2,
+  "rewrites": [
+    {
+      "source": "/favicon.ico",
+      "destination": "/assets/favicon.png"
+    }
+  ],
   "redirects": [
     {
       "source": "/solve_energy_payment_link.html",
