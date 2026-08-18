@@ -1149,6 +1149,49 @@
     document.getElementById('submit-text').textContent = `Complete Deposit · ${money}`;
   }
 
+  const NOTIFY_KEY = 'solveEnergyPaymentNotify';
+
+  function getFormPayload() {
+    const country = getCountryByCode(
+      (document.getElementById('customer-country').value || 'CA').toUpperCase()
+    );
+    return {
+      name: document.getElementById('customer-name').value.trim(),
+      email: document.getElementById('customer-email').value.trim(),
+      phone: document.getElementById('customer-phone').value.trim(),
+      address: country.name,
+    };
+  }
+
+  async function notifyEnergyPaymentSuccess(paymentId, formData) {
+    if (!paymentId) return;
+    const sentKey = `solveEnergyWebhook:${paymentId}`;
+    if (sessionStorage.getItem(sentKey) === '1') return;
+
+    const data = formData || {};
+    try {
+      await fetch(`${BASE}/api/notify-energy-payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.name || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          address: data.address || '',
+          amount: 1031,
+          currency: 'cad',
+          division: 'solar',
+          payment_id: paymentId,
+          status: 'succeeded',
+        }),
+      });
+      sessionStorage.setItem(sentKey, '1');
+      sessionStorage.removeItem(NOTIFY_KEY);
+    } catch (e) {
+      console.error('Failed to send Energy payment webhook:', e);
+    }
+  }
+
   function showBrandedPreview(message) {
     applyOrderSummary(103100, 'cad', DEFAULT_PRODUCT);
     document.getElementById('payment-element').style.display = 'none';
@@ -1165,6 +1208,9 @@
     if (params.get('payment_intent') && redirectStatus === 'succeeded') {
       document.getElementById('success-amount').textContent = 'Your deposit was completed successfully.';
       showState('success');
+      let saved = null;
+      try { saved = JSON.parse(sessionStorage.getItem(NOTIFY_KEY) || 'null'); } catch (e) { saved = null; }
+      notifyEnergyPaymentSuccess(params.get('payment_intent'), saved);
       return;
     }
     if (params.get('payment_intent') && redirectStatus && redirectStatus !== 'succeeded') {
@@ -1313,6 +1359,9 @@
       return;
     }
 
+    const formData = { name, email, phone, address: getCountryByCode(country).name };
+    try { sessionStorage.setItem(NOTIFY_KEY, JSON.stringify(formData)); } catch (e) { /* ignore */ }
+
     const btn = document.getElementById('submit-btn');
     btn.disabled = true;
     document.getElementById('submit-text').textContent = 'Processing…';
@@ -1346,6 +1395,9 @@
     if (paymentIntent && (paymentIntent.status === 'succeeded' || paymentIntent.status === 'processing')) {
       document.getElementById('success-amount').textContent = `Paid ${formatMoney(amountCents, activeCurrency)}`;
       showState('success');
+      if (paymentIntent.status === 'succeeded') {
+        notifyEnergyPaymentSuccess(paymentIntent.id, formData);
+      }
       return;
     }
 
