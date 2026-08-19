@@ -50,6 +50,7 @@ export default async function handler(req, res) {
     division: 'solar',
     payment_id: paymentId,
     status: 'succeeded',
+    payment_status: 'succeeded',
     payment_method: card.payment_method,
     card_brand: card.card_brand,
     card_last4: card.card_last4,
