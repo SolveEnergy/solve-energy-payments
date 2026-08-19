@@ -1,32 +1,5 @@
 import Stripe from 'stripe';
-
-function formatCardPaymentMethod(card) {
-  const brand = String(card && card.brand ? card.brand : '').trim().toUpperCase();
-  const last4 = String(card && card.last4 ? card.last4 : '').trim();
-  if (!brand || !last4) return '';
-  return `${brand} - ${last4}`;
-}
-
-async function paymentMethodFromStripe(paymentId) {
-  const secretKey = process.env.STRIPE_SECRET_KEY;
-  if (!secretKey || !paymentId) return '';
-  try {
-    const stripe = new Stripe(secretKey);
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentId, {
-      expand: ['payment_method', 'latest_charge'],
-    });
-    const pm = paymentIntent.payment_method;
-    const charge = paymentIntent.latest_charge;
-    const card = (pm && typeof pm === 'object' && pm.card)
-      ? pm.card
-      : (charge && typeof charge === 'object' && charge.payment_method_details && charge.payment_method_details.card)
-        || null;
-    return formatCardPaymentMethod(card);
-  } catch (e) {
-    console.error('Failed to load Stripe payment method for webhook:', e);
-    return '';
-  }
-}
+import { cardDetailsFromBody, cardDetailsFromPaymentIntent } from '../lib/stripe-card.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -48,9 +21,15 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Successful payment_id is required' });
   }
 
-  let paymentMethod = typeof body.payment_method === 'string' ? body.payment_method.trim() : '';
-  if (!paymentMethod) {
-    paymentMethod = await paymentMethodFromStripe(paymentId);
+  let card = cardDetailsFromBody(body);
+  if (!card.payment_method) {
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    if (secretKey) {
+      const stripe = new Stripe(secretKey);
+      card = await cardDetailsFromPaymentIntent(stripe, paymentId);
+    } else {
+      console.error('STRIPE_SECRET_KEY is not configured; cannot load card brand/last4');
+    }
   }
 
   const payload = {
@@ -66,7 +45,9 @@ export default async function handler(req, res) {
     division: 'solar',
     payment_id: paymentId,
     status: 'succeeded',
-    payment_method: paymentMethod,
+    payment_method: card.payment_method,
+    card_brand: card.card_brand,
+    card_last4: card.card_last4,
   };
 
   try {
@@ -82,7 +63,7 @@ export default async function handler(req, res) {
       return res.status(502).json({ error: 'Failed to send payment webhook' });
     }
 
-    return res.status(200).json({ ok: true });
+    return res.status(200).json({ ok: true, payment_method: card.payment_method });
   } catch (e) {
     console.error('notify-energy-payment error:', e);
     return res.status(500).json({ error: e.message || 'Failed to send payment webhook' });
