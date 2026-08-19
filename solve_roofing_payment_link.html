@@ -1213,6 +1213,7 @@
     const method = paymentMethod || data.payment_method || '';
     const card_brand = data.card_brand || (method.includes(' - ') ? method.split(' - ')[0] : '');
     const card_last4 = data.card_last4 || (method.includes(' - ') ? method.split(' - ')[1] : '');
+    const payment_method_id = data.payment_method_id || '';
     try {
       await fetch(`${BASE}/api/notify-roofing-payment`, {
         method: 'POST',
@@ -1231,6 +1232,7 @@
           payment_id: paymentId,
           status: 'succeeded',
           payment_method: method,
+          payment_method_id,
           card_brand,
           card_last4,
         }),
@@ -1451,7 +1453,7 @@
         country,
       },
     };
-    const formData = { name, email, phone, address, city, state, postal, payment_method: '', card_brand: '', card_last4: '' };
+    const formData = { name, email, phone, address, city, state, postal, payment_method: '', payment_method_id: '', card_brand: '', card_last4: '' };
     try { sessionStorage.setItem(NOTIFY_KEY, JSON.stringify(formData)); } catch (e) { /* ignore */ }
 
     const btn = document.getElementById('submit-btn');
@@ -1497,6 +1499,7 @@
     formData.card_brand = cardFields.card_brand;
     formData.card_last4 = cardFields.card_last4;
     formData.payment_method = formatCardFromCard(createdPaymentMethod && createdPaymentMethod.card);
+    formData.payment_method_id = createdPaymentMethod && createdPaymentMethod.id ? createdPaymentMethod.id : '';
     try { sessionStorage.setItem(NOTIFY_KEY, JSON.stringify(formData)); } catch (e) { /* ignore */ }
 
     let error;

@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { cardDetailsFromBody, cardDetailsFromPaymentIntent } from '../lib/stripe-card.js';
+import { cardDetailsFromBody, cardDetailsFromPaymentIntent, paymentMethodIdFromBody } from '../lib/stripe-card.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -25,14 +25,19 @@ export default async function handler(req, res) {
   const amount = Number.isFinite(Number(body.amount)) ? Number(body.amount) : 1031;
 
   let card = cardDetailsFromBody(body);
-  if (!card.card_brand || !card.card_last4) {
-    const secretKey = process.env.ROOFING_STRIPE_SECRET_KEY;
-    if (secretKey) {
-      const stripe = new Stripe(secretKey);
-      card = await cardDetailsFromPaymentIntent(stripe, paymentId);
-    } else {
-      console.error('ROOFING_STRIPE_SECRET_KEY is not configured; cannot load card brand/last4');
+  const secretKey = process.env.ROOFING_STRIPE_SECRET_KEY;
+  if ((!card.card_brand || !card.card_last4) && secretKey) {
+    const stripe = new Stripe(secretKey);
+    const fromStripe = await cardDetailsFromPaymentIntent(
+      stripe,
+      paymentId,
+      paymentMethodIdFromBody(body),
+    );
+    if (fromStripe.card_brand && fromStripe.card_last4) {
+      card = fromStripe;
     }
+  } else if (!card.card_brand || !card.card_last4) {
+    console.error('ROOFING_STRIPE_SECRET_KEY is not configured; cannot load card brand/last4');
   }
 
   const payload = {
