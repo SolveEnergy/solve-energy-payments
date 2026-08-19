@@ -1022,6 +1022,7 @@
   let amountCents = 103100;
   let activeCurrency = 'cad';
   let checkoutReady = false;
+  let paymentIntentId = '';
   const DEFAULT_PRODUCT = 'Total Deposit';
 
   const COUNTRIES = [
@@ -1183,7 +1184,23 @@
     };
   }
 
-  async function notifyEnergyPaymentSuccess(paymentId, formData) {
+  function formatCardPaymentMethod(paymentIntent) {
+    if (!paymentIntent) return '';
+    const pm = paymentIntent.payment_method;
+    const charge = paymentIntent.charges && paymentIntent.charges.data && paymentIntent.charges.data[0];
+    const latest = paymentIntent.latest_charge;
+    const card = (pm && typeof pm === 'object' && pm.card)
+      ? pm.card
+      : (charge && charge.payment_method_details && charge.payment_method_details.card)
+        || (latest && typeof latest === 'object' && latest.payment_method_details && latest.payment_method_details.card)
+        || null;
+    const brand = String(card && card.brand ? card.brand : '').trim().toUpperCase();
+    const last4 = String(card && card.last4 ? card.last4 : '').trim();
+    if (!brand || !last4) return '';
+    return `${brand} - ${last4}`;
+  }
+
+  async function notifyEnergyPaymentSuccess(paymentId, formData, paymentMethod) {
     if (!paymentId) return;
     const sentKey = `solveEnergyWebhook:${paymentId}`;
     if (sessionStorage.getItem(sentKey) === '1') return;
@@ -1206,6 +1223,7 @@
           division: 'solar',
           payment_id: paymentId,
           status: 'succeeded',
+          payment_method: paymentMethod || '',
         }),
       });
       sessionStorage.setItem(sentKey, '1');
@@ -1285,6 +1303,7 @@
         showBrandedPreview(intent.error || 'Stripe secret key is not configured');
         return;
       }
+      paymentIntentId = intent.paymentIntentId || '';
 
       stripe = Stripe(config.publishableKey);
 
@@ -1435,6 +1454,20 @@
         return;
       }
 
+      if (paymentIntentId) {
+        const receiptRes = await fetch(`${BASE}/api/create-payment-intent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paymentIntentId, email, name }),
+        });
+        const receipt = await receiptRes.json();
+        if (!receiptRes.ok) {
+          showPayError(receipt.error || 'Could not set the receipt email.');
+          resetPayButton();
+          return;
+        }
+      }
+
       const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: {
@@ -1468,7 +1501,7 @@
         document.getElementById('success-amount').textContent = `Paid ${formatMoney(amountCents, activeCurrency)}`;
         showState('success');
         if (paymentIntent.status === 'succeeded') {
-          notifyEnergyPaymentSuccess(paymentIntent.id, formData);
+          notifyEnergyPaymentSuccess(paymentIntent.id, formData, formatCardPaymentMethod(paymentIntent));
         }
         return;
       }

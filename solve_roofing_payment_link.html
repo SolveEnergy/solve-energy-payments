@@ -1014,6 +1014,7 @@
   let amountCents = 103100;
   let activeCurrency = 'cad';
   let checkoutReady = false;
+  let paymentIntentId = '';
   const DEFAULT_PRODUCT = 'Total Deposit';
 
   const COUNTRIES = [
@@ -1277,6 +1278,7 @@
         showBrandedPreview(intent.error || 'Stripe secret key is not configured');
         return;
       }
+      paymentIntentId = intent.paymentIntentId || '';
 
       stripe = Stripe(config.publishableKey);
 
@@ -1408,6 +1410,21 @@
     const btn = document.getElementById('submit-btn');
     btn.disabled = true;
     document.getElementById('submit-text').textContent = 'Processing…';
+
+    if (paymentIntentId) {
+      const receiptRes = await fetch(`${BASE}/api/roofing-create-payment-intent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentIntentId, email, name }),
+      });
+      const receipt = await receiptRes.json();
+      if (!receiptRes.ok) {
+        showPayError(receipt.error || 'Could not set the receipt email.');
+        btn.disabled = false;
+        document.getElementById('submit-text').textContent = `Complete Deposit · ${formatMoney(amountCents, activeCurrency)}`;
+        return;
+      }
+    }
 
     const { error, paymentIntent } = await stripe.confirmPayment({
       elements,
