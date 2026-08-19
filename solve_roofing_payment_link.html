@@ -1177,13 +1177,18 @@
     };
   }
 
-  function formatCardFromCard(card) {
-    const brand = String(card && (card.display_brand || card.brand) ? (card.display_brand || card.brand) : '')
+  function cardFieldsFromCard(card) {
+    const card_brand = String(card && (card.display_brand || card.brand) ? (card.display_brand || card.brand) : '')
       .trim()
       .toUpperCase();
-    const last4 = String(card && card.last4 ? card.last4 : '').trim();
-    if (!brand || !last4) return '';
-    return `${brand} - ${last4}`;
+    const card_last4 = String(card && card.last4 ? card.last4 : '').trim();
+    return { card_brand, card_last4 };
+  }
+
+  function formatCardFromCard(card) {
+    const { card_brand, card_last4 } = cardFieldsFromCard(card);
+    if (!card_brand || !card_last4) return '';
+    return `${card_brand} - ${card_last4}`;
   }
 
   function formatCardPaymentMethod(paymentIntent) {
@@ -1206,6 +1211,8 @@
 
     const data = formData || {};
     const method = paymentMethod || data.payment_method || '';
+    const card_brand = data.card_brand || (method.includes(' - ') ? method.split(' - ')[0] : '');
+    const card_last4 = data.card_last4 || (method.includes(' - ') ? method.split(' - ')[1] : '');
     try {
       await fetch(`${BASE}/api/notify-roofing-payment`, {
         method: 'POST',
@@ -1224,6 +1231,8 @@
           payment_id: paymentId,
           status: 'succeeded',
           payment_method: method,
+          card_brand,
+          card_last4,
         }),
       });
       sessionStorage.setItem(sentKey, '1');
@@ -1442,7 +1451,7 @@
         country,
       },
     };
-    const formData = { name, email, phone, address, city, state, postal, payment_method: '' };
+    const formData = { name, email, phone, address, city, state, postal, payment_method: '', card_brand: '', card_last4: '' };
     try { sessionStorage.setItem(NOTIFY_KEY, JSON.stringify(formData)); } catch (e) { /* ignore */ }
 
     const btn = document.getElementById('submit-btn');
@@ -1484,6 +1493,9 @@
     }
 
     const createdPaymentMethod = created.paymentMethod || null;
+    const cardFields = cardFieldsFromCard(createdPaymentMethod && createdPaymentMethod.card);
+    formData.card_brand = cardFields.card_brand;
+    formData.card_last4 = cardFields.card_last4;
     formData.payment_method = formatCardFromCard(createdPaymentMethod && createdPaymentMethod.card);
     try { sessionStorage.setItem(NOTIFY_KEY, JSON.stringify(formData)); } catch (e) { /* ignore */ }
 

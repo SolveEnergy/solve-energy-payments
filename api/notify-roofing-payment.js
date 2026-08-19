@@ -25,7 +25,7 @@ export default async function handler(req, res) {
   const amount = Number.isFinite(Number(body.amount)) ? Number(body.amount) : 1031;
 
   let card = cardDetailsFromBody(body);
-  if (!card.payment_method) {
+  if (!card.card_brand || !card.card_last4) {
     const secretKey = process.env.ROOFING_STRIPE_SECRET_KEY;
     if (secretKey) {
       const stripe = new Stripe(secretKey);
@@ -47,10 +47,11 @@ export default async function handler(req, res) {
     currency: 'cad',
     division: 'roofing',
     payment_id: paymentId,
-    status: 'succeeded',
-    payment_method: card.payment_method,
     card_brand: card.card_brand,
     card_last4: card.card_last4,
+    payment_method: card.payment_method,
+    status: 'succeeded',
+    payment_status: 'succeeded',
   };
 
   try {
@@ -66,7 +67,7 @@ export default async function handler(req, res) {
       return res.status(502).json({ error: 'Failed to send payment webhook' });
     }
 
-    return res.status(200).json({ ok: true, payment_method: card.payment_method });
+    return res.status(200).json({ ok: true, card_brand: card.card_brand, card_last4: card.card_last4 });
   } catch (e) {
     console.error('notify-roofing-payment error:', e);
     return res.status(500).json({ error: e.message || 'Failed to send payment webhook' });
