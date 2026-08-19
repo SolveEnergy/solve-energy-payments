@@ -1,3 +1,33 @@
+import Stripe from 'stripe';
+
+function formatCardPaymentMethod(card) {
+  const brand = String(card && card.brand ? card.brand : '').trim().toUpperCase();
+  const last4 = String(card && card.last4 ? card.last4 : '').trim();
+  if (!brand || !last4) return '';
+  return `${brand} - ${last4}`;
+}
+
+async function paymentMethodFromStripe(paymentId) {
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+  if (!secretKey || !paymentId) return '';
+  try {
+    const stripe = new Stripe(secretKey);
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentId, {
+      expand: ['payment_method', 'latest_charge'],
+    });
+    const pm = paymentIntent.payment_method;
+    const charge = paymentIntent.latest_charge;
+    const card = (pm && typeof pm === 'object' && pm.card)
+      ? pm.card
+      : (charge && typeof charge === 'object' && charge.payment_method_details && charge.payment_method_details.card)
+        || null;
+    return formatCardPaymentMethod(card);
+  } catch (e) {
+    console.error('Failed to load Stripe payment method for webhook:', e);
+    return '';
+  }
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -18,6 +48,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Successful payment_id is required' });
   }
 
+  let paymentMethod = typeof body.payment_method === 'string' ? body.payment_method.trim() : '';
+  if (!paymentMethod) {
+    paymentMethod = await paymentMethodFromStripe(paymentId);
+  }
+
   const payload = {
     name: typeof body.name === 'string' ? body.name.trim() : '',
     email: typeof body.email === 'string' ? body.email.trim() : '',
@@ -31,6 +66,7 @@ export default async function handler(req, res) {
     division: 'solar',
     payment_id: paymentId,
     status: 'succeeded',
+    payment_method: paymentMethod,
   };
 
   try {
