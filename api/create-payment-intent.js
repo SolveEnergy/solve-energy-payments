@@ -54,7 +54,12 @@ export default async function handler(req, res) {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountCents,
       currency,
-      automatic_payment_methods: { enabled: true },
+      payment_method_types: ['card'],
+      payment_method_options: {
+        card: {
+          request_three_d_secure: 'automatic',
+        },
+      },
       description: typeof description === 'string' && description.trim()
         ? description.trim()
         : productName,

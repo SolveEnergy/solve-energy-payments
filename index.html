@@ -886,7 +886,7 @@
         </div>
         <div class="field">
           <label for="customer-phone">Phone number</label>
-          <input id="customer-phone" type="tel" autocomplete="tel" placeholder="(555) 000-0000" />
+          <input id="customer-phone" type="tel" autocomplete="tel" placeholder="(604) 555-0100" />
         </div>
       </div>
       <div class="field">
@@ -899,13 +899,13 @@
           <input id="customer-city" type="text" autocomplete="address-level2" placeholder="City" />
         </div>
         <div class="field">
-          <label for="customer-state">Province / State</label>
-          <input id="customer-state" type="text" autocomplete="address-level1" placeholder="Province / State" />
+          <label for="customer-state">Province</label>
+          <input id="customer-state" type="text" autocomplete="address-level1" placeholder="BC" />
         </div>
       </div>
       <div class="field">
-        <label for="customer-postal">Postal / ZIP code</label>
-        <input id="customer-postal" type="text" autocomplete="postal-code" placeholder="Postal / ZIP code" />
+        <label for="customer-postal">Postal code</label>
+        <input id="customer-postal" type="text" autocomplete="postal-code" placeholder="V8W 1A1" />
       </div>
 
       <div class="summary">
@@ -1060,20 +1060,6 @@
 
   const COUNTRIES = [
     { code: 'CA', name: 'Canada' },
-    { code: 'US', name: 'United States' },
-    { code: 'GB', name: 'United Kingdom' },
-    { code: 'AU', name: 'Australia' },
-    { code: 'NZ', name: 'New Zealand' },
-    { code: 'IE', name: 'Ireland' },
-    { code: 'DE', name: 'Germany' },
-    { code: 'FR', name: 'France' },
-    { code: 'NL', name: 'Netherlands' },
-    { code: 'MX', name: 'Mexico' },
-    { code: 'IN', name: 'India' },
-    { code: 'PH', name: 'Philippines' },
-    { code: 'SG', name: 'Singapore' },
-    { code: 'AE', name: 'United Arab Emirates' },
-    { code: 'ZA', name: 'South Africa' },
   ];
 
   function getCountryByCode(code) {
@@ -1171,6 +1157,18 @@
     } catch {
       return `CA$${(cents / 100).toFixed(2)}`;
     }
+  }
+
+  function normalizeCanadianPostal(value) {
+    const compact = String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (compact.length === 6) return `${compact.slice(0, 3)} ${compact.slice(3)}`;
+    return String(value || '').trim().toUpperCase();
+  }
+
+  function isCanadianPostal(value) {
+    return /^[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z] ?\d[ABCEGHJ-NPRSTV-Z]\d$/.test(
+      String(value || '').trim().toUpperCase()
+    );
   }
 
   function decodeParam(value) {
@@ -1354,7 +1352,7 @@
         showBrandedPreview(intent.error || 'Stripe secret key is not configured');
         return;
       }
-      stripe = Stripe(config.publishableKey);
+      stripe = Stripe(config.publishableKey, { locale: 'en-CA' });
 
       const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       const appearance = isDark
@@ -1415,6 +1413,7 @@
       elements = stripe.elements({
         clientSecret,
         appearance,
+        locale: 'en-CA',
         paymentMethodCreation: 'manual',
       });
 
@@ -1428,6 +1427,7 @@
         fields: {
           billingDetails: 'never',
         },
+        paymentMethodOrder: ['card'],
         wallets: {
           applePay: 'never',
           googlePay: 'never',
@@ -1457,8 +1457,8 @@
     const address = document.getElementById('customer-address').value.trim();
     const city = document.getElementById('customer-city').value.trim();
     const state = document.getElementById('customer-state').value.trim();
-    const postal = document.getElementById('customer-postal').value.trim();
-    const country = (document.getElementById('customer-country').value || 'CA').toUpperCase();
+    const postal = normalizeCanadianPostal(document.getElementById('customer-postal').value);
+    const country = 'CA';
 
     if (!name) {
       showPayError('Please enter your full name.');
@@ -1477,11 +1477,11 @@
       return;
     }
     if (!state) {
-      showPayError('Please enter your province / state.');
+      showPayError('Please enter your province.');
       return;
     }
-    if (!postal) {
-      showPayError('Please enter your postal / ZIP code.');
+    if (!isCanadianPostal(postal)) {
+      showPayError('Please enter a valid Canadian postal code.');
       return;
     }
 
