@@ -421,6 +421,33 @@
       min-height: 40px;
     }
 
+    .stripe-fallback {
+      display: block;
+      margin: 2px 0 16px;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.45;
+      color: #8a8f8a;
+      text-decoration: none;
+    }
+
+    .stripe-fallback:hover,
+    .stripe-fallback:focus-visible {
+      color: #6e736e;
+      text-decoration: underline;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .stripe-fallback {
+        color: #9aa19a;
+      }
+
+      .stripe-fallback:hover,
+      .stripe-fallback:focus-visible {
+        color: #b4bbb4;
+      }
+    }
+
     .stripe-placeholder {
       display: none;
       background: var(--input-bg);
@@ -894,6 +921,12 @@
         <strong>Stripe card form will appear here</strong><br />
         Add your Stripe secret key in Vercel to enable live payments.
       </div>
+      <a
+        class="stripe-fallback"
+        href="https://buy.stripe.com/eVq8wP0kA51Sdl1dqNfIs02"
+        target="_blank"
+        rel="noopener noreferrer"
+      >Trouble with payment? use the direct Stripe link here</a>
 
       <div class="field territory-field">
         <label id="country-label" for="country-trigger">Country / Territory</label>
