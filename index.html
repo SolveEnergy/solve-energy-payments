@@ -899,12 +899,12 @@
           <input id="customer-city" type="text" autocomplete="address-level2" placeholder="City" />
         </div>
         <div class="field">
-          <label for="customer-state">Province</label>
+          <label for="customer-state">Province / State</label>
           <input id="customer-state" type="text" autocomplete="address-level1" placeholder="BC" />
         </div>
       </div>
       <div class="field">
-        <label for="customer-postal">Postal code</label>
+        <label for="customer-postal">Postal / ZIP code</label>
         <input id="customer-postal" type="text" autocomplete="postal-code" placeholder="V8W 1A1" />
       </div>
 
@@ -1060,6 +1060,20 @@
 
   const COUNTRIES = [
     { code: 'CA', name: 'Canada' },
+    { code: 'US', name: 'United States' },
+    { code: 'GB', name: 'United Kingdom' },
+    { code: 'AU', name: 'Australia' },
+    { code: 'NZ', name: 'New Zealand' },
+    { code: 'IE', name: 'Ireland' },
+    { code: 'DE', name: 'Germany' },
+    { code: 'FR', name: 'France' },
+    { code: 'NL', name: 'Netherlands' },
+    { code: 'MX', name: 'Mexico' },
+    { code: 'IN', name: 'India' },
+    { code: 'PH', name: 'Philippines' },
+    { code: 'SG', name: 'Singapore' },
+    { code: 'AE', name: 'United Arab Emirates' },
+    { code: 'ZA', name: 'South Africa' },
   ];
 
   function getCountryByCode(code) {
@@ -1456,8 +1470,10 @@
     const address = document.getElementById('customer-address').value.trim();
     const city = document.getElementById('customer-city').value.trim();
     const state = document.getElementById('customer-state').value.trim();
-    const postal = normalizeCanadianPostal(document.getElementById('customer-postal').value);
-    const country = 'CA';
+    const country = (document.getElementById('customer-country').value || 'CA').toUpperCase();
+    const postal = country === 'CA'
+      ? normalizeCanadianPostal(document.getElementById('customer-postal').value)
+      : document.getElementById('customer-postal').value.trim();
 
     if (!name) {
       showPayError('Please enter your full name.');
@@ -1476,10 +1492,14 @@
       return;
     }
     if (!state) {
-      showPayError('Please enter your province.');
+      showPayError('Please enter your province / state.');
       return;
     }
-    if (!isCanadianPostal(postal)) {
+    if (!postal) {
+      showPayError('Please enter your postal / ZIP code.');
+      return;
+    }
+    if (country === 'CA' && !isCanadianPostal(postal)) {
       showPayError('Please enter a valid Canadian postal code.');
       return;
     }
