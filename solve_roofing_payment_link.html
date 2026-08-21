@@ -1377,6 +1377,7 @@
       elements = stripe.elements({
         clientSecret: intent.clientSecret,
         appearance,
+        paymentMethodCreation: 'manual',
       });
 
       document.getElementById('stripe-placeholder').style.display = 'none';
