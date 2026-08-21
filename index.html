@@ -1414,7 +1414,6 @@
         clientSecret,
         appearance,
         locale: 'en-CA',
-        paymentMethodCreation: 'manual',
       });
 
       document.getElementById('stripe-placeholder').style.display = 'none';
@@ -1517,27 +1516,8 @@
         return;
       }
 
-      const created = await stripe.createPaymentMethod({
-        elements,
-        params: { billing_details },
-      });
-      if (created.error) {
-        showPayError(created.error.message);
-        resetPayButton();
-        return;
-      }
-
-      const createdPaymentMethod = created.paymentMethod || null;
-      const cardFields = cardFieldsFromCard(createdPaymentMethod && createdPaymentMethod.card);
-      formData.card_brand = cardFields.card_brand;
-      formData.card_last4 = cardFields.card_last4;
-      formData.payment_method = formatCardFromCard(createdPaymentMethod && createdPaymentMethod.card);
-      formData.payment_method_id = createdPaymentMethod && createdPaymentMethod.id ? createdPaymentMethod.id : '';
-      try { sessionStorage.setItem(NOTIFY_KEY, JSON.stringify(formData)); } catch (e) { /* ignore */ }
-
       let { error, paymentIntent } = await stripe.confirmPayment({
         elements,
-        clientSecret,
         confirmParams: {
           return_url: `${window.location.origin}/`,
           payment_method_data: { billing_details },
@@ -1558,6 +1538,19 @@
       }
 
       if (paymentIntent && (paymentIntent.status === 'succeeded' || paymentIntent.status === 'processing')) {
+        const pm = paymentIntent.payment_method;
+        if (pm && typeof pm === 'object') {
+          const cardFields = cardFieldsFromCard(pm.card);
+          formData.card_brand = cardFields.card_brand;
+          formData.card_last4 = cardFields.card_last4;
+          formData.payment_method = formatCardFromCard(pm.card);
+          formData.payment_method_id = pm.id || '';
+        } else if (typeof pm === 'string') {
+          formData.payment_method_id = pm;
+          formData.payment_method = formData.payment_method || formatCardPaymentMethod(paymentIntent);
+        }
+        try { sessionStorage.setItem(NOTIFY_KEY, JSON.stringify(formData)); } catch (e) { /* ignore */ }
+
         document.getElementById('success-amount').textContent = `Paid ${formatMoney(amountCents, activeCurrency)}`;
         showState('success');
         if (paymentIntent.status === 'succeeded') {
