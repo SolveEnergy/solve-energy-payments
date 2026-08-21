@@ -1535,25 +1535,19 @@
       formData.payment_method_id = createdPaymentMethod && createdPaymentMethod.id ? createdPaymentMethod.id : '';
       try { sessionStorage.setItem(NOTIFY_KEY, JSON.stringify(formData)); } catch (e) { /* ignore */ }
 
-      let error;
-      let paymentIntent;
-      if (createdPaymentMethod && clientSecret) {
-        ({ error, paymentIntent } = await stripe.confirmPayment({
-          clientSecret,
-          confirmParams: {
-            payment_method: createdPaymentMethod.id,
-            return_url: `${window.location.origin}/`,
-          },
-          redirect: 'if_required',
-        }));
-      } else {
-        ({ error, paymentIntent } = await stripe.confirmPayment({
-          elements,
-          confirmParams: {
-            return_url: `${window.location.origin}/`,
-            payment_method_data: { billing_details },
-          },
-          redirect: 'if_required',
+      let { error, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        clientSecret,
+        confirmParams: {
+          return_url: `${window.location.origin}/`,
+          payment_method_data: { billing_details },
+        },
+        redirect: 'if_required',
+      });
+
+      if (!error && paymentIntent && paymentIntent.status === 'requires_action') {
+        ({ error, paymentIntent } = await stripe.handleNextAction({
+          clientSecret: paymentIntent.client_secret || clientSecret,
         }));
       }
 
@@ -1576,8 +1570,8 @@
         return;
       }
 
-      document.getElementById('success-amount').textContent = 'Your payment is being confirmed…';
-      showState('success');
+      showPayError('Payment could not be completed. Please try again.');
+      resetPayButton();
     } catch (e) {
       console.error(e);
       showPayError(e.message || 'Payment could not be completed. Please try again.');
