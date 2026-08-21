@@ -14,24 +14,10 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Roofing Stripe secret key is not configured' });
   }
 
-  const { email, name, job_id, description, paymentIntentId } = req.body || {};
-  const receiptEmail = typeof email === 'string' && email.includes('@') ? email.trim() : undefined;
+  const { email, name, job_id, description } = req.body || {};
 
   try {
     const stripe = new Stripe(secretKey);
-
-    if (typeof paymentIntentId === 'string' && paymentIntentId.startsWith('pi_')) {
-      if (!receiptEmail) {
-        return res.status(400).json({ error: 'A valid customer email is required for the Stripe receipt' });
-      }
-      const updated = await stripe.paymentIntents.update(paymentIntentId, {
-        receipt_email: receiptEmail,
-      });
-      return res.status(200).json({
-        paymentIntentId: updated.id,
-        receiptEmail: updated.receipt_email,
-      });
-    }
 
     const catalog = await loadRoofingPrice(stripe);
 
@@ -43,7 +29,6 @@ export default async function handler(req, res) {
       amount: catalog.amountCents,
       currency: catalog.currency,
       automatic_payment_methods: { enabled: true },
-      receipt_email: receiptEmail,
       description: typeof description === 'string' && description.trim()
         ? description.trim()
         : catalog.productName,

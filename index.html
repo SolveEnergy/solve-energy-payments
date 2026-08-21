@@ -1023,7 +1023,6 @@
   let amountCents = 103100;
   let activeCurrency = 'cad';
   let checkoutReady = false;
-  let paymentIntentId = '';
   const DEFAULT_PRODUCT = 'Total Deposit';
 
   const COUNTRIES = [
@@ -1322,8 +1321,6 @@
         showBrandedPreview(intent.error || 'Stripe secret key is not configured');
         return;
       }
-      paymentIntentId = intent.paymentIntentId || '';
-
       stripe = Stripe(config.publishableKey);
 
       const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1487,20 +1484,6 @@
         return;
       }
 
-      if (paymentIntentId) {
-        const receiptRes = await fetch(`${BASE}/api/create-payment-intent`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paymentIntentId, email, name }),
-        });
-        const receipt = await receiptRes.json();
-        if (!receiptRes.ok) {
-          showPayError(receipt.error || 'Could not set the receipt email.');
-          resetPayButton();
-          return;
-        }
-      }
-
       const created = await stripe.createPaymentMethod({
         elements,
         params: { billing_details },
@@ -1527,7 +1510,6 @@
           confirmParams: {
             payment_method: createdPaymentMethod.id,
             return_url: `${window.location.origin}/`,
-            receipt_email: email,
           },
           redirect: 'if_required',
         }));
@@ -1536,7 +1518,6 @@
           elements,
           confirmParams: {
             return_url: `${window.location.origin}/`,
-            receipt_email: email,
             payment_method_data: { billing_details },
           },
           redirect: 'if_required',
