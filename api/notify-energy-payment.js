@@ -9,9 +9,11 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const webhookUrl =
+  const webhookUrl = (
+    process.env.MAKE_WEBHOOK_URL ||
     process.env.ENERGY_MAKE_WEBHOOK_URL ||
-    'https://hook.us1.make.com/kv373lbaf143bg9f4k28878txn8znd2i';
+    'https://hook.us1.make.com/kv373lbaf143bg9f4k28878txn8znd2i'
+  ).trim();
 
   const body = req.body || {};
   const paymentId = typeof body.payment_id === 'string' ? body.payment_id.trim() : '';
