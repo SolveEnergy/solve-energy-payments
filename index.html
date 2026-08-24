@@ -1238,6 +1238,23 @@
     showState('error');
   }
 
+  function isCustomerInputError(error) {
+    if (!error) return false;
+    const type = String(error.type || '');
+    if (type === 'card_error' || type === 'validation_error') return true;
+    const code = String(error.code || '');
+    return /^(incorrect_|invalid_|incomplete_|expired_card|card_declined|authentication_required|postal_code_invalid)/.test(code);
+  }
+
+  function showStripePayError(error, resetPayButton) {
+    if (isCustomerInputError(error)) {
+      showPayError((error && error.message) || 'Please check your card details and try again.');
+      if (typeof resetPayButton === 'function') resetPayButton();
+      return;
+    }
+    showPaymentFailed(error && error.message ? error.message : error);
+  }
+
   function clearPayError() {
     const el = document.getElementById('pay-error');
     el.textContent = '';
@@ -1349,9 +1366,9 @@
       notifyEnergyPaymentSuccess(params.get('payment_intent'), saved, saved && saved.payment_method);
       return;
     }
+    let pendingPayBanner = '';
     if (params.get('payment_intent') && redirectStatus && redirectStatus !== 'succeeded') {
-      showPaymentFailed(redirectStatus);
-      return;
+      pendingPayBanner = 'Payment was not completed. Please try again.';
     }
 
     const emailFromUrl = decodeParam(params.get('email') || params.get('contact_email'));
@@ -1482,6 +1499,7 @@
       checkoutReady = true;
       document.getElementById('submit-btn').disabled = false;
       showState('pay');
+      if (pendingPayBanner) showPayError(pendingPayBanner);
     } catch (e) {
       console.error(e);
       showBrandedPreview(e.message || 'Unable to start Stripe checkout yet.');
@@ -1562,7 +1580,8 @@
     try {
       const { error: submitError } = await elements.submit();
       if (submitError) {
-        showPaymentFailed(submitError.message);
+        showPayError(submitError.message || 'Please check your card details and try again.');
+        resetPayButton();
         return;
       }
 
@@ -1582,7 +1601,7 @@
       }
 
       if (error) {
-        showPaymentFailed(error.message);
+        showStripePayError(error, resetPayButton);
         return;
       }
 
