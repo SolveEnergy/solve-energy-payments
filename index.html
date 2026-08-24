@@ -640,6 +640,27 @@
       font-size: 16px;
     }
 
+    .error-circle {
+      fill: var(--error-bg);
+      stroke: var(--error);
+    }
+
+    .error-mark {
+      stroke: var(--error);
+      stroke-dasharray: 64;
+    }
+
+    .error-stripe-link {
+      color: var(--green);
+      font-weight: 600;
+      text-decoration: underline;
+    }
+
+    .error-stripe-link:hover,
+    .error-stripe-link:focus-visible {
+      color: var(--text);
+    }
+
     .btn-secondary {
       background: transparent;
       color: var(--text);
@@ -987,10 +1008,22 @@
 
     <!-- Error -->
     <div id="state-error" class="state state-center">
-      <div class="error-badge">⚠️</div>
-      <h2>Something went wrong</h2>
-      <p id="error-message">We couldn't start checkout. Please try again or contact us.</p>
-      <button class="btn btn-secondary" type="button" onclick="window.location.reload()">Try again</button>
+      <div class="status-icon is-ready" id="error-visual">
+        <svg width="72" height="72" viewBox="0 0 52 52" aria-hidden="true">
+          <circle class="complete-circle error-circle" cx="26" cy="26" r="24" />
+          <path class="complete-check error-mark" d="M18 18 l16 16 M34 18 l-16 16" />
+        </svg>
+      </div>
+      <div class="eyebrow">Payment unsuccessful</div>
+      <h2>Hmm, looks like we are having trouble processing your payment.</h2>
+      <p>
+        <a
+          class="error-stripe-link"
+          href="https://buy.stripe.com/eVq8wP0kA51Sdl1dqNfIs02"
+          target="_blank"
+          rel="noopener noreferrer"
+        >Click here to pay directly with Stripe</a>
+      </p>
     </div>
   </main>
 
@@ -1200,6 +1233,11 @@
     el.classList.add('visible');
   }
 
+  function showPaymentFailed(detail) {
+    if (detail) console.error(detail);
+    showState('error');
+  }
+
   function clearPayError() {
     const el = document.getElementById('pay-error');
     el.textContent = '';
@@ -1297,14 +1335,8 @@
   }
 
   function showBrandedPreview(message) {
-    applyOrderSummary(103100, 'cad', DEFAULT_PRODUCT);
-    document.getElementById('payment-element').style.display = 'none';
-    document.getElementById('stripe-placeholder').style.display = 'block';
-    const info = document.getElementById('pay-info');
-    info.textContent = message || 'Stripe secret key is not configured yet. Add it in Vercel to enable card payments.';
-    info.classList.add('visible');
-    document.getElementById('submit-btn').disabled = true;
-    showState('pay');
+    console.error(message || 'Unable to start Stripe checkout yet.');
+    showPaymentFailed(message);
   }
 
   async function init() {
@@ -1318,8 +1350,7 @@
       return;
     }
     if (params.get('payment_intent') && redirectStatus && redirectStatus !== 'succeeded') {
-      document.getElementById('error-message').textContent = 'Payment was not completed. Please try again.';
-      showState('error');
+      showPaymentFailed(redirectStatus);
       return;
     }
 
@@ -1460,7 +1491,7 @@
   document.getElementById('submit-btn').addEventListener('click', async () => {
     clearPayError();
     if (!checkoutReady || !stripe || !elements) {
-      showPayError('Stripe is not ready yet. Add your secret key in Vercel, then refresh.');
+      showPaymentFailed('Stripe is not ready yet.');
       return;
     }
 
@@ -1531,8 +1562,7 @@
     try {
       const { error: submitError } = await elements.submit();
       if (submitError) {
-        showPayError(submitError.message);
-        resetPayButton();
+        showPaymentFailed(submitError.message);
         return;
       }
 
@@ -1552,8 +1582,7 @@
       }
 
       if (error) {
-        showPayError(error.message);
-        resetPayButton();
+        showPaymentFailed(error.message);
         return;
       }
 
@@ -1583,12 +1612,10 @@
         return;
       }
 
-      showPayError('Payment could not be completed. Please try again.');
-      resetPayButton();
+      showPaymentFailed('Payment could not be completed.');
     } catch (e) {
       console.error(e);
-      showPayError(e.message || 'Payment could not be completed. Please try again.');
-      resetPayButton();
+      showPaymentFailed(e.message || 'Payment could not be completed.');
     }
   });
 
