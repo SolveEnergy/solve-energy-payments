@@ -1389,6 +1389,11 @@
   }
 
   async function init() {
+    if (params.get('error_preview') === '1') {
+      showState('error');
+      return;
+    }
+
     const redirectStatus = params.get('redirect_status');
     if (params.get('payment_intent') && redirectStatus === 'succeeded') {
       document.getElementById('success-amount').textContent = 'Your deposit was completed successfully.';
