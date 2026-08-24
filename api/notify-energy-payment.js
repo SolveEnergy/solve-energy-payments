@@ -17,10 +17,61 @@ export default async function handler(req, res) {
 
   const body = req.body || {};
   const paymentId = typeof body.payment_id === 'string' ? body.payment_id.trim() : '';
-  const status = body.status === 'succeeded' ? 'succeeded' : '';
+  const isError = body.status === 'error' || body.status === 'failed';
+  const isSuccess = body.status === 'succeeded';
 
-  if (!paymentId || status !== 'succeeded') {
+  if (!isSuccess && !isError) {
+    return res.status(400).json({ error: 'A payment status of succeeded or error is required' });
+  }
+  if (isSuccess && !paymentId) {
     return res.status(400).json({ error: 'Successful payment_id is required' });
+  }
+
+  const client = {
+    name: typeof body.name === 'string' ? body.name.trim() : '',
+    email: typeof body.email === 'string' ? body.email.trim() : '',
+    phone: typeof body.phone === 'string' ? body.phone.trim() : '',
+    address: typeof body.address === 'string' ? body.address.trim() : '',
+    city: typeof body.city === 'string' ? body.city.trim() : '',
+    state: typeof body.state === 'string' ? body.state.trim() : '',
+    postal_code: typeof body.postal_code === 'string' ? body.postal_code.trim() : '',
+    amount: 1031,
+    currency: 'cad',
+    division: 'solar',
+  };
+
+  if (isError) {
+    const payload = {
+      ...client,
+      payment_id: paymentId,
+      status: 'error',
+      payment_status: 'error',
+      error_message: typeof body.error_message === 'string' ? body.error_message.trim() : '',
+      error_type: typeof body.error_type === 'string' ? body.error_type.trim() : '',
+      error_code: typeof body.error_code === 'string' ? body.error_code.trim() : '',
+      payment_method: typeof body.payment_method === 'string' ? body.payment_method.trim() : '',
+      card_brand: typeof body.card_brand === 'string' ? body.card_brand.trim() : '',
+      card_last4: typeof body.card_last4 === 'string' ? body.card_last4.trim() : '',
+    };
+
+    try {
+      const makeRes = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!makeRes.ok) {
+        const text = await makeRes.text();
+        console.error('Energy Make error webhook failed:', makeRes.status, text);
+        return res.status(502).json({ error: 'Failed to send payment webhook' });
+      }
+
+      return res.status(200).json({ ok: true, status: 'error' });
+    } catch (e) {
+      console.error('notify-energy-payment error:', e);
+      return res.status(500).json({ error: e.message || 'Failed to send payment webhook' });
+    }
   }
 
   let card = cardDetailsFromBody(body);

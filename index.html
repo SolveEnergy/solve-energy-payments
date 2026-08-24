@@ -1235,6 +1235,7 @@
 
   function showPaymentFailed(detail) {
     if (detail) console.error(detail);
+    notifyEnergyPaymentError(detail);
     showState('error');
   }
 
@@ -1252,7 +1253,7 @@
       if (typeof resetPayButton === 'function') resetPayButton();
       return;
     }
-    showPaymentFailed(error && error.message ? error.message : error);
+    showPaymentFailed(error);
   }
 
   function clearPayError() {
@@ -1349,6 +1350,44 @@
     } catch (e) {
       console.error('Failed to send Energy payment webhook:', e);
     }
+  }
+
+  function notifyErrorDetails(detail) {
+    if (!detail) return { error_message: 'Unexpected error', error_type: '', error_code: '' };
+    if (typeof detail === 'string') return { error_message: detail, error_type: '', error_code: '' };
+    return {
+      error_message: detail.message || String(detail),
+      error_type: detail.type || '',
+      error_code: detail.code || '',
+    };
+  }
+
+  function notifyEnergyPaymentError(detail) {
+    const data = getFormPayload();
+    const err = notifyErrorDetails(detail);
+    fetch(`${BASE}/api/notify-energy-payment`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: data.name || '',
+        email: data.email || '',
+        phone: data.phone || '',
+        address: data.address || '',
+        city: data.city || '',
+        state: data.state || '',
+        postal_code: data.postal || '',
+        amount: 1031,
+        currency: 'cad',
+        division: 'solar',
+        status: 'error',
+        payment_id: '',
+        error_message: err.error_message,
+        error_type: err.error_type,
+        error_code: err.error_code,
+      }),
+    }).catch((e) => {
+      console.error('Failed to send Energy error webhook:', e);
+    });
   }
 
   function showBrandedPreview(message) {
