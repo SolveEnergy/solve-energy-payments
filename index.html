@@ -618,6 +618,15 @@
       margin: 0 auto 20px;
     }
 
+    #state-error.state.active {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 280px;
+      text-align: center;
+    }
+
     .state-center h2 {
       font-size: 22px;
       font-weight: 500;
@@ -638,16 +647,6 @@
       font-weight: 600;
       color: var(--green);
       font-size: 16px;
-    }
-
-    .error-circle {
-      fill: var(--error-bg);
-      stroke: var(--error);
-    }
-
-    .error-mark {
-      stroke: var(--error);
-      stroke-dasharray: 64;
     }
 
     .error-stripe-link {
@@ -1008,13 +1007,7 @@
 
     <!-- Error -->
     <div id="state-error" class="state state-center">
-      <div class="status-icon is-ready" id="error-visual">
-        <svg width="72" height="72" viewBox="0 0 52 52" aria-hidden="true">
-          <circle class="complete-circle error-circle" cx="26" cy="26" r="24" />
-          <path class="complete-check error-mark" d="M18 18 l16 16 M34 18 l-16 16" />
-        </svg>
-      </div>
-      <div class="eyebrow">Payment unsuccessful</div>
+      <div class="eyebrow">Payment Not Completed</div>
       <h2>Hmm, looks like we are having trouble processing your payment.</h2>
       <p>
         <a
