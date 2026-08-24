@@ -37,7 +37,7 @@ export default async function handler(req, res) {
     postal_code: typeof body.postal_code === 'string' ? body.postal_code.trim() : '',
     amount: 1031,
     currency: 'cad',
-    division: 'solar',
+    'Project Type': 'solar',
   };
 
   if (isError) {
@@ -100,7 +100,7 @@ export default async function handler(req, res) {
     postal_code: typeof body.postal_code === 'string' ? body.postal_code.trim() : '',
     amount: 1031,
     currency: 'cad',
-    division: 'solar',
+    'Project Type': 'solar',
     payment_id: paymentId,
     status: 'succeeded',
     payment_status: 'succeeded',

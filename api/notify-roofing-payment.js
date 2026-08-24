@@ -50,7 +50,7 @@ export default async function handler(req, res) {
     postal_code: typeof body.postal_code === 'string' ? body.postal_code.trim() : '',
     amount,
     currency: 'cad',
-    division: 'roofing',
+    'Project Type': 'roofing',
     payment_id: paymentId,
     card_brand: card.card_brand,
     card_last4: card.card_last4,
