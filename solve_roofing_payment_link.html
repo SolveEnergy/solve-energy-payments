@@ -1443,7 +1443,8 @@
     const billing_details = {
       email,
       name,
-      phone: phone || undefined,
+      // Stripe requires phone when Payment Element uses fields.billingDetails: 'never'
+      phone: phone || '',
       address: {
         line1: address,
         city,
